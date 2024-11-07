@@ -67,15 +67,26 @@ const syncSchedules = async (req, res) => {
   const { groupID } = req.body;
 
   try {
-    // Ambil jadwal dari semua anggota grup
+    // Ambil data jadwal anggota grup
     const schedules = await pool.query(
-      "SELECT scheduleData FROM Schedules JOIN GroupMembers ON Schedules.owner = GroupMembers.userID WHERE GroupMembers.groupID = $1",
+      "SELECT Schedules.scheduleData FROM Schedules JOIN GroupMembers ON Schedules.owner = GroupMembers.userID WHERE GroupMembers.groupID = $1",
       [groupID]
     );
 
-    // Implementasi Sync Schedule (Kerjakan Nanti ~Fairuz)
+    if (schedules.rows.length === 0) {
+      return res.status(404).json({ error: "No schedules found for the given group ID" });
+    }
 
-    res.status(200).json({ message: "Schedules synced successfully", schedules: schedules.rows });
+    // Semua ini berjalan dalam bentuk asumsi, asumsi ini jalan
+    const syncedData = schedules.rows.map(row => row.scheduleData);
+
+    // Simpan hasil sinkronisasi ke dalam tabel `SyncedSchedules`
+    const newSync = await pool.query(
+      "INSERT INTO SyncedSchedules (groupID, syncedData) VALUES ($1, $2) RETURNING *",
+      [groupID, JSON.stringify(syncedData)]
+    );
+
+    res.status(200).json({ message: "Schedules synced successfully", sync: newSync.rows[0] });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
