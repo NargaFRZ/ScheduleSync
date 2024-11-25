@@ -7,10 +7,10 @@ const LandingPage = () => {
   return (
     <div className="bg-gray-100">
       {/* Navbar */}
-      <NavBar className="w-full" />
+      {/* <NavBar className="w-full" /> */}
 
-      {/* Hero Section with Background Image */}A
-      <section className="relative text-center bg-cover bg-center text-white h-[500px] flex items-center justify-center bg-[url('../assets/backgroundImage.svg')]">
+      {/* Hero Section with Background Image */}
+      <section className="relative text-center bg-cover bg-center text-white h-[500px] flex items-center justify-center bg-blue-700">
         {/* Overlay for Better Readability */}
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
 
@@ -24,9 +24,8 @@ const LandingPage = () => {
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Link to="/login">
-              <button className="bg-blue-700 px-6 py-3 rounded font-medium">Start</button>
+              <button className="bg-blue-700 px-12 py-4 rounded font-medium">Start</button>
             </Link>
-            <button className="bg-blue-700 px-6 py-3 rounded font-medium">Create Group</button>
           </div>
         </div>
       </section>
@@ -45,7 +44,8 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="p-16 flex flex-wrap justify-center gap-8">
+      <section className="p-16 flex flex-wrap justify-center gap-8 bg-blue-900">
+        
         <div className="bg-blue-700 text-white p-8 rounded-lg shadow-lg w-80">
           <h3 className="text-2xl font-bold mb-4">Upload your Schedule Now!</h3>
           <p>Scan your personal schedule to ScheduleSync</p>

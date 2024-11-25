@@ -6,7 +6,7 @@ const SignUp = () => {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Navbar */}
-      <NavBar className="w-full" />
+      {/* <NavBar className="w-full" /> */}
 
       {/* Main Content */}
       <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-900 px-4 py-12">
