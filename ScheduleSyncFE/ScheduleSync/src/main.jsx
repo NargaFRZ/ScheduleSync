@@ -7,8 +7,10 @@ import Login from './pages/Login.jsx';
 import SignUp from './pages/SignUp.jsx';
 import YourSchedule from './pages/YourSchedule.jsx';
 import Groups from './pages/Groups.jsx';
-// import EditGroup from './pages/EditGroup.jsx';
-// import EditPassword from './pages/EditPassword.jsx';
+import GroupDetail from './pages/GroupDetail.jsx';
+import EditGroup from './pages/EditGroup.jsx';
+import EditPassword from './pages/EditPassword.jsx';
+import EditProfile from './pages/EditProfile.jsx';
 
 const router = createBrowserRouter([
   {
@@ -31,14 +33,22 @@ const router = createBrowserRouter([
     path: 'groups',
     element: <Groups/>
   },
-  // {
-  //   path: 'edit-password',
-  //   element: <EditPassword/>
-  // },
-  // {
-  //   path: 'edit-group',
-  //   element: <EditGroup/>
-  // },
+  {
+    path: 'groups/group-detail',
+    element: <GroupDetail/>
+  },
+  {
+    path: 'edit-group',
+    element: <EditGroup/>
+  },
+  {
+    path: 'edit-password',
+    element: <EditPassword/>
+  },
+  {
+    path: 'edit-profile',
+    element: <EditProfile/>
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(

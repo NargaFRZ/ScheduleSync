@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBarLogout";
 import SideBar from "../components/SideBar";
 
@@ -14,6 +15,8 @@ const Groups = () => {
     { name: "Netlab's Schedule", entries: 20 },
     { name: "Multimedia Team", entries: 10 },
   ];
+  
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-blue-900">
@@ -29,10 +32,7 @@ const Groups = () => {
         <div className="flex-1 flex flex-col  px-6"> {/* Add margin-left for sidebar */}
           <div className="py-8">
             {/* Page Title */}
-            <h1 className="text-2xl font-semibold mb-4">Your Groups</h1>
-            <button className="bg-blue-600 text-white py-2 px-4 rounded mb-6 hover:bg-blue-700">
-              New +
-            </button>
+            <h1 className="text-4xl font-semibold mb-4">Your Groups</h1>
 
             {/* Group Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -43,7 +43,8 @@ const Groups = () => {
                 >
                   <h2 className="text-lg font-semibold">{group.name}</h2>
                   <p className="mt-2">Entries: {group.entries}</p>
-                  <button className="mt-4 bg-white text-blue-900 px-4 py-2 rounded hover:bg-gray-100">
+                  <button onClick={() => navigate("/groups/group-detail")}
+                          className="mt-4 bg-white text-blue-900 px-4 py-2 rounded hover:bg-gray-100">
                     Detail
                   </button>
                 </div>
