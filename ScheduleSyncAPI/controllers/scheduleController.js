@@ -59,8 +59,30 @@ const deleteSchedule = async (req, res) => {
   }
 };
 
+// Fungsi untuk mengambil jadwal berdasarkan owner (userID)
+const getSchedulesByOwner = async (req, res) => {
+  const { owner } = req.params;
+
+  try {
+    const schedules = await pool.query(
+      "SELECT * FROM Schedules WHERE owner = $1",
+      [owner]
+    );
+
+    if (schedules.rows.length === 0) {
+      return res.status(404).json({ error: "No schedules found for this user" });
+    }
+
+    res.status(200).json({ schedules: schedules.rows });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   uploadSchedule,
   updateSchedule,
   deleteSchedule,
+  getSchedulesByOwner
 };
