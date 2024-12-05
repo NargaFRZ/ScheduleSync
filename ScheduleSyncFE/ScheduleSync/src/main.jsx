@@ -11,6 +11,8 @@ import GroupDetail from './pages/GroupDetail.jsx';
 import EditGroup from './pages/EditGroup.jsx';
 import EditPassword from './pages/EditPassword.jsx';
 import EditProfile from './pages/EditProfile.jsx';
+import AddSchedule from './pages/AddSchedule.jsx';
+import EditSchedule from './pages/EditSchedule.jsx';
 
 const router = createBrowserRouter([
   {
@@ -48,6 +50,14 @@ const router = createBrowserRouter([
   {
     path: 'edit-profile',
     element: <EditProfile/>
+  },
+  {
+    path: 'add-schedule',
+    element: <AddSchedule/>
+  },
+  {
+    path: 'edit-schedule',
+    element: <EditSchedule/>
   },
 ]);
 

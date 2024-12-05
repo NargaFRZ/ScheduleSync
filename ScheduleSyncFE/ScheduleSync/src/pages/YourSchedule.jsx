@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBarLogout";
 import SideBar from "../components/SideBar";
 
 const YourSchedule = () => {
+  const navigate = useNavigate();
   const user = {
     name: "Wendy",
     email: "lebit1x@gmail.com",
@@ -25,7 +27,10 @@ const YourSchedule = () => {
             <div className="text-center">
               <h1 className="text-6xl font-bold mb-4">Oh, No!</h1>
               <p className="text-xl mb-6">It’s Seems Like You Haven’t Added Your Schedule Yet!</p>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
+              <button 
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow"
+                onClick={() => navigate('/add-schedule')}
+              >
                 Add Your Schedule
               </button>
               <p className="text-sm text-blue-500 mt-4">Add <span className="font-bold">image</span> files</p>

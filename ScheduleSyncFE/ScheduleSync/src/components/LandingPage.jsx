@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import NavBar from "./NavBarLogout";
-import SSLogo from "../assets/SyncLogo.svg"; 
+import SSLogo from "../assets/SyncLogo.svg";
+import backgroundImage from "../assets/backgroundImage.svg";
 
 const LandingPage = () => {
   return (
@@ -10,7 +11,8 @@ const LandingPage = () => {
       {/* <NavBar className="w-full" /> */}
 
       {/* Hero Section with Background Image */}
-      <section className="relative text-center bg-cover bg-center text-white h-[500px] flex items-center justify-center bg-blue-700">
+      <section className="relative text-center bg-cover bg-center text-white h-[500px] flex items-center justify-center"
+        style={{ backgroundImage: `url(${backgroundImage})` }}>
         {/* Overlay for Better Readability */}
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
 
