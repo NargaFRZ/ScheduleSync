@@ -86,7 +86,9 @@ const syncSchedules = async (req, res) => {
   try {
     // Ambil data jadwal anggota grup
     const schedules = await pool.query(
-      "SELECT Schedules.scheduleData FROM Schedules JOIN GroupMembers ON Schedules.owner = GroupMembers.userID WHERE GroupMembers.groupID = $1",
+      "SELECT Schedules.scheduleData FROM Schedules " +
+      "JOIN GroupMembers ON Schedules.owner = GroupMembers.userID " +
+      "WHERE GroupMembers.groupID = $1",
       [groupID]
     );
 
@@ -94,43 +96,19 @@ const syncSchedules = async (req, res) => {
       return res.status(404).json({ error: "No schedules found for the given group ID" });
     }
 
-    // Gabungkan jadwal menjadi satu array
-    const allSchedules = schedules.rows.flatMap(row => JSON.parse(row.scheduleData));
+    // Parse data jadwal ke dalam format JSON
+    const allSchedules = schedules.rows.map(row => JSON.parse(row.scheduleData));
 
-    // Urutkan jadwal berdasarkan startTime
-    allSchedules.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+    // Gabungkan semua jadwal berdasarkan hari
+    const weeklySchedule = mergeWeeklySchedules(allSchedules);
 
-    // Cari waktu overlap dan waktu luang
-    const mergedSchedules = [];
-    let current = allSchedules[0];
-
-    for (let i = 1; i < allSchedules.length; i++) {
-      const next = allSchedules[i];
-      if (new Date(current.endTime) >= new Date(next.startTime)) {
-        // Gabungkan overlap
-        current.endTime = new Date(Math.max(new Date(current.endTime), new Date(next.endTime))).toISOString();
-      } else {
-        // Tambahkan ke hasil gabungan
-        mergedSchedules.push(current);
-        current = next;
-      }
-    }
-    mergedSchedules.push(current); // Tambahkan jadwal terakhir
-
-    // Temukan waktu luang
-    const freeTime = [];
-    for (let i = 1; i < mergedSchedules.length; i++) {
-      const prevEnd = new Date(mergedSchedules[i - 1].endTime);
-      const nextStart = new Date(mergedSchedules[i].startTime);
-      if (prevEnd < nextStart) {
-        freeTime.push({ startTime: prevEnd.toISOString(), endTime: nextStart.toISOString() });
-      }
-    }
+    // Temukan waktu luang per hari
+    const freeTime = findFreeTime(weeklySchedule);
 
     // Simpan hasil sinkronisasi
     const newSync = await pool.query(
       "INSERT INTO SyncedSchedules (groupID, syncedData) VALUES ($1, $2) RETURNING *",
-      [groupID, JSON.stringify({ mergedSchedules, freeTime })]
+      [groupID, JSON.stringify({ weeklySchedule, freeTime })]
     );
 
     res.status(200).json({ message: "Schedules synced successfully", sync: newSync.rows[0] });
@@ -139,6 +117,56 @@ const syncSchedules = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+// Fungsi untuk menggabungkan jadwal mingguan dari semua anggota
+function mergeWeeklySchedules(allSchedules) {
+  const mergedSchedule = {};
+
+  allSchedules.forEach(userSchedule => {
+    userSchedule.schedule.forEach(daySchedule => {
+      const day = daySchedule.day;
+      if (!mergedSchedule[day]) {
+        mergedSchedule[day] = [];
+      }
+      mergedSchedule[day] = mergedSchedule[day].concat(daySchedule.events);
+    });
+  });
+
+  // Urutkan jadwal per hari berdasarkan waktu mulai
+  for (const day in mergedSchedule) {
+    mergedSchedule[day].sort((a, b) => new Date(`1970-01-01T${a.startTime}`) - new Date(`1970-01-01T${b.startTime}`));
+  }
+
+  return mergedSchedule;
+}
+
+// Fungsi untuk menemukan waktu luang per hari
+function findFreeTime(weeklySchedule) {
+  const freeTime = {};
+
+  for (const day in weeklySchedule) {
+    const daySchedule = weeklySchedule[day];
+    const dayFreeTime = [];
+    let currentEnd = "00:00:00";
+
+    daySchedule.forEach(event => {
+      if (currentEnd < event.startTime) {
+        dayFreeTime.push({ startTime: currentEnd, endTime: event.startTime });
+      }
+      currentEnd = currentEnd > event.endTime ? currentEnd : event.endTime;
+    });
+
+    // Tambahkan waktu luang dari akhir jadwal terakhir hingga 24:00
+    if (currentEnd < "24:00:00") {
+      dayFreeTime.push({ startTime: currentEnd, endTime: "24:00:00" });
+    }
+
+    freeTime[day] = dayFreeTime;
+  }
+
+  return freeTime;
+}
+
 
 // Fungsi untuk mengambil member grup dan melihat status sudah set schedule atau belum
 const getGroupMembers = async (req, res) => {
