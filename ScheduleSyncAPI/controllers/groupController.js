@@ -94,13 +94,43 @@ const syncSchedules = async (req, res) => {
       return res.status(404).json({ error: "No schedules found for the given group ID" });
     }
 
-    // Semua ini berjalan dalam bentuk asumsi, asumsi ini jalan
-    const syncedData = schedules.rows.map(row => row.scheduleData);
+    // Gabungkan jadwal menjadi satu array
+    const allSchedules = schedules.rows.flatMap(row => JSON.parse(row.scheduleData));
 
-    // Simpan hasil sinkronisasi ke dalam tabel `SyncedSchedules`
+    // Urutkan jadwal berdasarkan startTime
+    allSchedules.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+
+    // Cari waktu overlap dan waktu luang
+    const mergedSchedules = [];
+    let current = allSchedules[0];
+
+    for (let i = 1; i < allSchedules.length; i++) {
+      const next = allSchedules[i];
+      if (new Date(current.endTime) >= new Date(next.startTime)) {
+        // Gabungkan overlap
+        current.endTime = new Date(Math.max(new Date(current.endTime), new Date(next.endTime))).toISOString();
+      } else {
+        // Tambahkan ke hasil gabungan
+        mergedSchedules.push(current);
+        current = next;
+      }
+    }
+    mergedSchedules.push(current); // Tambahkan jadwal terakhir
+
+    // Temukan waktu luang
+    const freeTime = [];
+    for (let i = 1; i < mergedSchedules.length; i++) {
+      const prevEnd = new Date(mergedSchedules[i - 1].endTime);
+      const nextStart = new Date(mergedSchedules[i].startTime);
+      if (prevEnd < nextStart) {
+        freeTime.push({ startTime: prevEnd.toISOString(), endTime: nextStart.toISOString() });
+      }
+    }
+
+    // Simpan hasil sinkronisasi
     const newSync = await pool.query(
       "INSERT INTO SyncedSchedules (groupID, syncedData) VALUES ($1, $2) RETURNING *",
-      [groupID, JSON.stringify(syncedData)]
+      [groupID, JSON.stringify({ mergedSchedules, freeTime })]
     );
 
     res.status(200).json({ message: "Schedules synced successfully", sync: newSync.rows[0] });
