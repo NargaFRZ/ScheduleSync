@@ -22,6 +22,11 @@ const createGroup = async (req, res) => {
     );
 
     res.status(201).json({ message: "Group created successfully", group: newGroup.rows[0] });
+
+    const joinGroup = await pool.query(
+      "INSERT INTO GroupMembers (groupID, userID) VALUES ($1, $2)",
+      [newGroup.rows[0].groupid, createdBy]
+    );
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
@@ -96,8 +101,29 @@ const syncSchedules = async (req, res) => {
       return res.status(404).json({ error: "No schedules found for the given group ID" });
     }
 
+    console.log("Schedules raw data:", schedules.rows);
+
     // Parse data jadwal ke dalam format JSON
-    const allSchedules = schedules.rows.map(row => JSON.parse(row.scheduleData));
+    const allSchedules = schedules.rows.map(row => {
+      try {
+        if (typeof row.scheduledata === "string") {
+          return JSON.parse(row.scheduledata); // Jika data adalah string JSON
+        } else if (typeof row.scheduledata === "object") {
+          return row.scheduledata; // Jika data sudah berupa objek
+        } else {
+          throw new Error("Invalid scheduleData format");
+        }
+      } catch (err) {
+        console.error("Failed to parse scheduleData:", err.message);
+        return null;
+      }
+    }).filter(data => data !== null); // Hanya jadwal yang berhasil diparsing
+
+    console.log("Parsed schedules:", allSchedules);
+
+    if (allSchedules.length === 0) {
+      return res.status(400).json({ error: "No valid schedules found for synchronization" });
+    }
 
     // Gabungkan semua jadwal berdasarkan hari
     const weeklySchedule = mergeWeeklySchedules(allSchedules);
@@ -118,23 +144,27 @@ const syncSchedules = async (req, res) => {
   }
 };
 
+
 // Fungsi untuk menggabungkan jadwal mingguan dari semua anggota
 function mergeWeeklySchedules(allSchedules) {
   const mergedSchedule = {};
 
   allSchedules.forEach(userSchedule => {
-    userSchedule.schedule.forEach(daySchedule => {
-      const day = daySchedule.day;
+    // Iterasi melalui hari (Monday, Tuesday, ...)
+    Object.keys(userSchedule).forEach(day => {
       if (!mergedSchedule[day]) {
         mergedSchedule[day] = [];
       }
-      mergedSchedule[day] = mergedSchedule[day].concat(daySchedule.events);
+      // Gabungkan event dari setiap hari
+      mergedSchedule[day] = mergedSchedule[day].concat(userSchedule[day]);
     });
   });
 
   // Urutkan jadwal per hari berdasarkan waktu mulai
   for (const day in mergedSchedule) {
-    mergedSchedule[day].sort((a, b) => new Date(`1970-01-01T${a.startTime}`) - new Date(`1970-01-01T${b.startTime}`));
+    mergedSchedule[day].sort((a, b) => 
+      new Date(`1970-01-01T${a.startTime}`) - new Date(`1970-01-01T${b.startTime}`)
+    );
   }
 
   return mergedSchedule;
@@ -194,11 +224,44 @@ const getGroupMembers = async (req, res) => {
   }
 };
 
+// Fungsi untuk join grup menggunakan invite code
+const joinGroup = async (req, res) => {
+  const { inviteCode, userID } = req.body;
+
+  try {
+    // Cari grup berdasarkan inviteCode
+    const group = await pool.query(
+      "SELECT groupID FROM Groups WHERE inviteCode = $1",
+      [inviteCode]
+    );
+    console.log(group.rows);
+
+    if (group.rows.length === 0) {
+      return res.status(404).json({ error: "Invalid invite code" });
+    }
+
+    const groupID = group.rows[0].groupid;
+    console.log(groupID);
+
+    // Tambahkan anggota ke grup
+    await pool.query(
+      "INSERT INTO GroupMembers (groupID, userID) VALUES ($1, $2)",
+      [groupID, userID]
+    );
+
+    res.status(200).json({ message: "Joined group successfully", groupID });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   createGroup,
   addMember,
   removeMember,
   syncSchedules,
   deleteGroup,
-  getGroupMembers
+  getGroupMembers,
+  joinGroup
 };

@@ -8,5 +8,6 @@ router.delete('/remove-member', groupController.removeMember);
 router.post('/sync-schedules', groupController.syncSchedules);
 router.delete('/delete', groupController.deleteGroup);
 router.get('/get-members/:groupID', groupController.getGroupMembers);
+router.post('/join', groupController.joinGroup);
 
 module.exports = router;

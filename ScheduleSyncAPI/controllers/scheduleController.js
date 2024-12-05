@@ -7,7 +7,7 @@ const uploadSchedule = async (req, res) => {
   try {
     const newSchedule = await pool.query(
       "INSERT INTO Schedules (owner, scheduleData, isValidated) VALUES ($1, $2, $3) RETURNING *",
-      [owner, scheduleData, false]
+      [owner, scheduleData, true]
     );
 
     res.status(201).json({ message: "Schedule uploaded successfully", schedule: newSchedule.rows[0] });
@@ -68,7 +68,9 @@ const getSchedulesByOwner = async (req, res) => {
       "SELECT * FROM Schedules WHERE owner = $1",
       [owner]
     );
-
+    console.log(req.params);
+    console.log(schedules);
+    console.log(schedules.rows);
     if (schedules.rows.length === 0) {
       return res.status(404).json({ error: "No schedules found for this user" });
     }
