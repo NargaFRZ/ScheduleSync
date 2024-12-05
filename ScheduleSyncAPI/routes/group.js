@@ -4,7 +4,9 @@ const groupController = require('../controllers/groupController');
 
 router.post('/create', groupController.createGroup);
 router.post('/add-member', groupController.addMember);
-router.post('/remove-member', groupController.removeMember);
+router.delete('/remove-member', groupController.removeMember);
 router.post('/sync-schedules', groupController.syncSchedules);
+router.delete('/delete', groupController.deleteGroup);
+router.get('/get-members/:groupID', groupController.getGroupMembers);
 
 module.exports = router;

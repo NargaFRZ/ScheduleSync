@@ -62,6 +62,23 @@ const removeMember = async (req, res) => {
   }
 };
 
+// Fungsi untuk menghapus grup
+const deleteGroup = async (req, res) => {
+  const { groupID } = req.body;
+
+  try {
+    await pool.query(
+      "DELETE FROM Groups WHERE groupID = $1",
+      [groupID]
+    );
+
+    res.status(200).json({ message: "Group deleted successfully" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+}
+
 // Fungsi untuk menyinkronkan jadwal anggota dalam grup
 const syncSchedules = async (req, res) => {
   const { groupID } = req.body;
@@ -93,9 +110,37 @@ const syncSchedules = async (req, res) => {
   }
 };
 
+// Fungsi untuk mengambil member grup dan melihat status sudah set schedule atau belum
+const getGroupMembers = async (req, res) => {
+  const { groupID } = req.params;
+
+  try {
+    const members = await pool.query(
+      "SELECT Users.username, GroupMembers.userID, " +
+      "CASE WHEN Schedules.scheduleData IS NOT NULL THEN true ELSE false END AS hasSchedule " +
+      "FROM Users " +
+      "JOIN GroupMembers ON Users.userID = GroupMembers.userID " +
+      "LEFT JOIN Schedules ON Users.userID = Schedules.owner " +
+      "WHERE GroupMembers.groupID = $1",
+      [groupID]
+    );
+
+    if (members.rows.length === 0) {
+      return res.status(404).json({ error: "No members found for the given group ID" });
+    }
+
+    res.status(200).json({ members: members.rows });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   createGroup,
   addMember,
   removeMember,
   syncSchedules,
+  deleteGroup,
+  getGroupMembers
 };
