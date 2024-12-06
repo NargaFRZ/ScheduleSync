@@ -43,13 +43,14 @@ export const deleteSchedule = async (scheduleID) => {
   }
 };
 
-// Get schedules for a user
-export const getUserSchedules = async (userID) => {
-  try {
-    const response = await instance.get(`/schedule/user/${userID}`);
-    return baseApiResponse(response.data, true);
-  } catch (error) {
-    console.error("Error fetching user schedules:", error.response?.data || error.message);
-    return baseApiResponse(error.response?.data || "Server error", false);
-  }
-};
+// Get schedules by owner
+export const getSchedulesByOwner = async (ownerID) => {
+    try {
+      const response = await instance.get(`/schedule/schedulesByOwner/${ownerID}`);
+      return baseApiResponse(response.data, true);
+    } catch (error) {
+      console.error("Error fetching schedules by owner:", error.response?.data || error.message);
+      return baseApiResponse(error.response?.data || "Server error", false);
+    }
+  };
+  
