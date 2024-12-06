@@ -10,5 +10,6 @@ router.delete('/delete', groupController.deleteGroup);
 router.get('/get-members/:groupID', groupController.getGroupMembers);
 router.post('/join', groupController.joinGroup);
 router.get('/synced-schedule/:groupID', groupController.getSyncedSchedule);
+router.get('/', groupController.getAllGroups);
 
 module.exports = router;

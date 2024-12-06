@@ -277,6 +277,21 @@ const getSyncedSchedule = async (req, res) => {
   }
 };
 
+const getAllGroups = async (req, res) => {
+  try {
+    const groups = await pool.query("SELECT * FROM Groups ORDER BY created_at DESC");
+
+    if (groups.rows.length === 0) {
+      return res.status(404).json({ error: "No groups found" });
+    }
+
+    res.status(200).json({ groups: groups.rows });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   createGroup,
   addMember,
@@ -285,5 +300,6 @@ module.exports = {
   deleteGroup,
   getGroupMembers,
   joinGroup,
-  getSyncedSchedule
+  getSyncedSchedule,
+  getAllGroups
 };
