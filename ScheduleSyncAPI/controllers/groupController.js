@@ -256,6 +256,27 @@ const joinGroup = async (req, res) => {
   }
 };
 
+// Fungsi untuk mengambil synced schedule berdasarkan groupID
+const getSyncedSchedule = async (req, res) => {
+  const { groupID } = req.params;
+
+  try {
+    const syncedSchedule = await pool.query(
+      "SELECT syncedData FROM SyncedSchedules WHERE groupID = $1",
+      [groupID]
+    );
+
+    if (syncedSchedule.rows.length === 0) {
+      return res.status(404).json({ error: "No synced schedule found for the given group ID" });
+    }
+
+    res.status(200).json({ syncedSchedule: JSON.parse(syncedSchedule.rows[0].synceddata) });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   createGroup,
   addMember,
@@ -263,5 +284,6 @@ module.exports = {
   syncSchedules,
   deleteGroup,
   getGroupMembers,
-  joinGroup
+  joinGroup,
+  getSyncedSchedule
 };

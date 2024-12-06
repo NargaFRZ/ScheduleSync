@@ -9,5 +9,6 @@ router.post('/sync-schedules', groupController.syncSchedules);
 router.delete('/delete', groupController.deleteGroup);
 router.get('/get-members/:groupID', groupController.getGroupMembers);
 router.post('/join', groupController.joinGroup);
+router.get('/synced-schedule/:groupID', groupController.getSyncedSchedule);
 
 module.exports = router;
