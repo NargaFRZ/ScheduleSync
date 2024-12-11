@@ -9,15 +9,27 @@ const baseApiResponse = (data, isSuccess) => {
 };
 
 // Fetch all groups
-export const fetchGroups = async () => {
+export const fetchGroupsByUser = async (userID) => {
   try {
-    const response = await instance.get("/group");
+    const response = await instance.get(`/group/get-group/${userID}`);
     return baseApiResponse(response.data, true);
   } catch (error) {
-    console.error("Error fetching groups:", error.response?.data || error.message);
+    console.error("Error fetching groups by user:", error.response?.data || error.message);
     return baseApiResponse(error.response?.data || "Server error", false);
   }
 };
+
+export const fetchGroupsByOwner = async (userID) => {
+  try {
+    const response = await instance.get(`/group/get-group-owner/${userID}`);
+    return baseApiResponse(response.data, true);
+  } catch (error) {
+    console.error("Error fetching groups by user:", error.response?.data || error.message);
+    return baseApiResponse(error.response?.data || "Server error", false);
+  }
+};
+
+
 
 // Create a new group
 export const createGroup = async (groupData) => {

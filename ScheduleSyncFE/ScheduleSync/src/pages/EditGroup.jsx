@@ -1,36 +1,51 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "../components/NavBarLogout";
 import SideBar from "../components/SideBar";
-import PopupAddGroup from "../components/PopupAddGroup"; // Import the PopupAddGroup component
-import PopupDeleteGroup from "../components/PopupDeleteGroup"; // Import the PopupDeleteGroup component
-import { fetchGroups, deleteGroup } from "../actions/group.actions";
+import PopupAddGroup from "../components/PopupAddGroup";
+import PopupDeleteGroup from "../components/PopupDeleteGroup";
+import { fetchGroupsByOwner, deleteGroup } from "../actions/group.actions";
+import { fetchUserData } from "../actions/account.actions";
 
 const EditGroup = () => {
   const [showPopup, setShowPopup] = useState(false); // State to manage "Add Group" popup visibility
   const [showDeletePopup, setShowDeletePopup] = useState(false); // State to manage "Delete Group" popup visibility
   const [groups, setGroups] = useState([]); // State to store groups
   const [selectedGroup, setSelectedGroup] = useState(null); // State to manage the group being deleted
+  const [user, setUser] = useState(null); // State to store user data
   const [loading, setLoading] = useState(false);
 
-  const user = {
-    name: "Wendy",
-    email: "lebit1x@gmail.com",
-  };
-
-  // Fetch groups when the component mounts
+  // Fetch user and group data when the component mounts
   useEffect(() => {
-    const fetchGroupData = async () => {
-      setLoading(true);
-      const response = await fetchGroups();
-      if (response.success) {
-        setGroups(response.data);
-      } else {
-        console.error("Error fetching groups:", response.data);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch user data
+        const userResponse = await fetchUserData();
+        if (userResponse.success) {
+          const userData = userResponse.data;
+          setUser({ name: userData.username, email: userData.email });
+
+          // Fetch groups specific to the user by ID
+          const groupResponse = await fetchGroupsByOwner(userData.userid);
+          console.log(groupResponse.data.groups[0].groupname);
+          if (groupResponse.success) {
+            // Check if the response contains the 'groups' array
+            const groupsArray = groupResponse.data.groups || []; // Fallback to empty array if groups is not found
+            setGroups(groupsArray);
+          } else {
+            console.error("Error fetching groups:", groupResponse.data);
+          }
+        } else {
+          console.error("Error fetching user data:", userResponse.data);
+        }
+      } catch (err) {
+        console.error("Error loading data:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    fetchGroupData();
+    fetchData();
   }, []);
 
   // Handle group deletion
@@ -57,11 +72,15 @@ const EditGroup = () => {
       {/* Layout Wrapper */}
       <div className="flex flex-1 relative">
         {/* Sidebar */}
-        <SideBar
-          name={user.name}
-          email={user.email}
-          className="fixed top-0 left-0 z-10"
-        />
+        {user ? (
+          <SideBar
+            name={user.name}
+            email={user.email}
+            className="fixed top-0 left-0 z-10"
+          />
+        ) : (
+          <div>Loading user...</div>
+        )}
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col px-6 py-8">
@@ -76,9 +95,13 @@ const EditGroup = () => {
             </button>
           </div>
 
-          {/* Group Cards */}
+          {/* Group Cards or No Groups Message */}
           {loading ? (
             <p>Loading...</p>
+          ) : groups.length === 0 ? (
+            <p className="text-center text-blue-900">
+              You do not own any groups
+            </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {groups.map((group, index) => (
@@ -88,7 +111,8 @@ const EditGroup = () => {
                 >
                   {/* Card Header */}
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold">{group.name}</h2>
+                    <h2 className="text-lg font-semibold">{group.groupname}</h2>{" "}
+                    {/* Use groupname instead of name */}
                     <p className="text-sm">Entries: {group.entries || 0}</p>
                   </div>
 

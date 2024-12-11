@@ -8,7 +8,7 @@ const PopupAddGroup = ({ onClose, onAddGroup }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const response = await createGroup({ name: groupName });
+    const response = await createGroup({ groupName: groupName });
     if (response.success) {
       onAddGroup(response.data); // Notify parent of the new group
       onClose(); // Close the popup
