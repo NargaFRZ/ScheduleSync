@@ -28,3 +28,7 @@ export const loginUser = async (userData) => {
     return baseApiResponse(error.response?.data || "Server error", false); // Return failure response
   }
 };
+
+export const fetchUserData = async () => {
+
+};
