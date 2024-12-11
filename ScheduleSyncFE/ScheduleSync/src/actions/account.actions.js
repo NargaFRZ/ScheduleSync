@@ -47,3 +47,16 @@ export const fetchUserData = async () => {
     return baseApiResponse(error.response?.data || "Server error", false); // Return failure response
   }
 };
+
+export const editUser = async (userData) => {
+  try {
+    const response = await instance.put("/account/edit", userData);
+    return baseApiResponse(response.data, true);
+  } catch (error) {
+    console.error(
+      "Error logging in user:",
+      error.response?.data || error.message
+    );
+    return baseApiResponse(error.response?.data || "Server error", false); // Return failure response
+  }
+};

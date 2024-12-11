@@ -58,21 +58,28 @@ const loginUser = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-
 const editUser = async (req, res) => {
   const { username, email, password } = req.body;
 
+  // Validate email format
   if (!validateEmail(email)) {
     return res.status(400).json({ error: "Invalid email format" });
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    let query = "UPDATE Users SET username = $1, email = $2";
+    const values = [username, email];
 
-    const updatedUser = await pool.query(
-      "UPDATE Users SET username = $1, email = $2, password = $3 WHERE email = $2 RETURNING *",
-      [username, email, hashedPassword]
-    );
+    // Check if password is provided
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      query += ", password = $3";
+      values.push(hashedPassword);
+    }
+
+    query += " WHERE email = $2 RETURNING *";
+
+    const updatedUser = await pool.query(query, values);
 
     if (updatedUser.rows.length === 0) {
       return res.status(404).json({ error: "User not found" });
@@ -116,7 +123,9 @@ const getUserbyId = async (req, res) => {
     } else {
       return res.status(440).send("Login session expired");
     }
-    current = await pool.query("SELECT * FROM Users WHERE userid = $1", [currentId]);
+    current = await pool.query("SELECT * FROM Users WHERE userid = $1", [
+      currentId,
+    ]);
     if (current.rows.length == 0) {
       return res.status(404).send("Account Not Found");
     }
