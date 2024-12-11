@@ -2,11 +2,14 @@ import React, { useState, useEffect } from "react";
 import NavBar from "../components/NavBarLogout";
 import SideBar from "../components/SideBar";
 import PopupAddGroup from "../components/PopupAddGroup"; // Import the PopupAddGroup component
+import PopupDeleteGroup from "../components/PopupDeleteGroup"; // Import the PopupDeleteGroup component
 import { fetchGroups, deleteGroup } from "../actions/group.actions";
 
 const EditGroup = () => {
-  const [showPopup, setShowPopup] = useState(false); // State to manage popup visibility
+  const [showPopup, setShowPopup] = useState(false); // State to manage "Add Group" popup visibility
+  const [showDeletePopup, setShowDeletePopup] = useState(false); // State to manage "Delete Group" popup visibility
   const [groups, setGroups] = useState([]); // State to store groups
+  const [selectedGroup, setSelectedGroup] = useState(null); // State to manage the group being deleted
   const [loading, setLoading] = useState(false);
 
   const user = {
@@ -35,6 +38,7 @@ const EditGroup = () => {
     const response = await deleteGroup(groupID);
     if (response.success) {
       setGroups((prev) => prev.filter((group) => group._id !== groupID));
+      setShowDeletePopup(false); // Close the delete popup
     } else {
       console.error("Error deleting group:", response.data);
     }
@@ -90,7 +94,9 @@ const EditGroup = () => {
 
                   {/* Card Description */}
                   <div className="bg-gray-100 text-blue-900 p-3 rounded">
-                    <p className="text-sm">{group.description || "No description available"}</p>
+                    <p className="text-sm">
+                      {group.description || "No description available"}
+                    </p>
                   </div>
 
                   {/* Action Buttons */}
@@ -100,7 +106,10 @@ const EditGroup = () => {
                     </button>
                     <button
                       className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-500"
-                      onClick={() => handleDelete(group._id)}
+                      onClick={() => {
+                        setSelectedGroup(group);
+                        setShowDeletePopup(true); // Show delete popup
+                      }}
                     >
                       Delete
                     </button>
@@ -124,6 +133,15 @@ const EditGroup = () => {
         <PopupAddGroup
           onClose={() => setShowPopup(false)}
           onAddGroup={handleAddGroup}
+        />
+      )}
+
+      {/* Popup for Deleting Group */}
+      {showDeletePopup && selectedGroup && (
+        <PopupDeleteGroup
+          group={selectedGroup}
+          onClose={() => setShowDeletePopup(false)}
+          onDeleteGroup={(deletedGroupId) => handleDelete(deletedGroupId)}
         />
       )}
     </div>
