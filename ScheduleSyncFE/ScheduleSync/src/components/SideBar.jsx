@@ -1,23 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-//import { fetchUserData } from "../actions/account.actions"; // Import the action
 import calendarIcon from "../assets/icons/uil_calender.svg";
 import groupsIcon from "../assets/icons/groups.svg";
 import lockIcon from "../assets/icons/Lock_alt.svg";
 import editIcon from "../assets/icons/edit_square.svg";
 import edit from "../assets/icons/edit.svg";
 
-const SideBar = () => {
+const SideBar = ({ name, email }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({ name: "", email: "" });
-
-  // useEffect(() => {
-  //   const getUserData = async () => {
-  //     const data = await fetchUserData(); // Fetch user data
-  //     setUser(data);
-  //   };
-  //   getUserData();
-  // }, []);
 
   const menuItems = [
     { name: "Your Schedule", path: "/yourschedule", icon: calendarIcon },
@@ -31,19 +21,19 @@ const SideBar = () => {
       {/* User Info */}
       <div className="flex flex-col items-start mb-8 relative">
         <div className="h-12 w-12 bg-gray-300 rounded-full mb-4"></div>
-        <h2 className="text-lg font-semibold">{user.name}</h2> {/* Use fetched user data */}
-        <p className="text-sm text-gray-300">{user.email}</p> {/* Use fetched user data */}
+        <h2 className="text-lg font-semibold">{name}</h2>
+        <p className="text-sm text-gray-300">{email}</p>
         <button
           className="absolute top-0 right-0 mt-2 mr-2 text-gray-300 hover:text-white"
           onClick={() => navigate('/edit-profile')}
         >
-          <img src={edit} alt="Edit icon" className="h-4 w-4" /> {/* Use the new edit icon */}
+          <img src={edit} alt="Edit icon" className="h-4 w-4" />
         </button>
       </div>
 
       {/* Menu */}
       <nav className="flex-1 space-y-4">
-        <div className="text-white">Dashboard</div> {/* Added Dashboard */}
+        <div className="text-white">Dashboard</div>
         {menuItems.map((item) => (
           <NavLink
             to={item.path}

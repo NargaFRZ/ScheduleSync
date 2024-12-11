@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
 const pool = require("../db");
+const { setLoggedInUserId, getLoggedInUserId } = require("./usersession");
 
 // Fungsi validasi email
 const validateEmail = (email) => {
@@ -10,7 +11,7 @@ const validateEmail = (email) => {
 
 const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
-  console.log(req.body)
+  console.log(req.body);
   if (!validateEmail(email)) {
     return res.status(400).json({ error: "Invalid email format" });
   }
@@ -23,7 +24,9 @@ const registerUser = async (req, res) => {
       [username, email, hashedPassword]
     );
 
-    res.status(201).json({ message: "User registered successfully", user: newUser.rows[0] });
+    res
+      .status(201)
+      .json({ message: "User registered successfully", user: newUser.rows[0] });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
@@ -32,9 +35,10 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
-
   try {
-    const user = await pool.query("SELECT * FROM Users WHERE email = $1", [email]);
+    const user = await pool.query("SELECT * FROM Users WHERE email = $1", [
+      email,
+    ]);
 
     if (user.rows.length === 0) {
       return res.status(400).json({ error: "User not found" });
@@ -45,7 +49,9 @@ const loginUser = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ error: "Incorrect password" });
     }
-    
+    const LoggedInId = user.rows[0].userid;
+    setLoggedInUserId(req, LoggedInId);
+    console.log(LoggedInId);
     res.status(200).json({ message: "Login successful", user: user.rows[0] });
   } catch (err) {
     console.error(err.message);
@@ -72,18 +78,24 @@ const editUser = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json({ message: "User updated successfully", user: updatedUser.rows[0] });
+    res.status(200).json({
+      message: "User updated successfully",
+      user: updatedUser.rows[0],
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
   }
-}
+};
 
 const deleteUser = async (req, res) => {
   const { email } = req.body;
 
   try {
-    const deletedUser = await pool.query("DELETE FROM Users WHERE email = $1 RETURNING *", [email]);
+    const deletedUser = await pool.query(
+      "DELETE FROM Users WHERE email = $1 RETURNING *",
+      [email]
+    );
 
     if (deletedUser.rows.length === 0) {
       return res.status(404).json({ error: "User not found" });
@@ -96,9 +108,29 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const getUserbyId = async (req, res) => {
+  try {
+    let currentId;
+    if (getLoggedInUserId(req)) {
+      currentId = getLoggedInUserId(req);
+    } else {
+      return res.status(440).send("Login session expired");
+    }
+    current = await pool.query("SELECT * FROM Users WHERE userid = $1", [currentId]);
+    if (current.rows.length == 0) {
+      return res.status(404).send("Account Not Found");
+    }
+    res.status(200).send(current.rows[0]);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   editUser,
   deleteUser,
+  getUserbyId,
 };

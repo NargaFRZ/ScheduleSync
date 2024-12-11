@@ -9,5 +9,6 @@ router.post('/register', [
 router.post('/login', accountController.loginUser);
 router.put('/edit', accountController.editUser);
 router.delete('/delete', accountController.deleteUser);
+router.get('/user',accountController.getUserbyId);
 
 module.exports = router;

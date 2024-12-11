@@ -1,9 +1,10 @@
-const pool = require('../db');
+const pool = require("../db");
+const { getLoggedInUserId } = require("./usersession");
 
 // Fungsi untuk mengenerate invite code 6 karakter acak
 function generateInviteCode() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code = '';
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let code = "";
   for (let i = 0; i < 6; i++) {
     code += characters.charAt(Math.floor(Math.random() * characters.length));
   }
@@ -12,7 +13,8 @@ function generateInviteCode() {
 
 // Fungsi untuk membuat grup baru
 const createGroup = async (req, res) => {
-  const { groupName, createdBy } = req.body;
+  const { groupName } = req.body;
+  const createdBy = getLoggedInUserId(req);
   const inviteCode = generateInviteCode();
 
   try {
@@ -21,7 +23,9 @@ const createGroup = async (req, res) => {
       [groupName, inviteCode, createdBy]
     );
 
-    res.status(201).json({ message: "Group created successfully", group: newGroup.rows[0] });
+    res
+      .status(201)
+      .json({ message: "Group created successfully", group: newGroup.rows[0] });
 
     const joinGroup = await pool.query(
       "INSERT INTO GroupMembers (groupID, userID) VALUES ($1, $2)",
@@ -72,17 +76,14 @@ const deleteGroup = async (req, res) => {
   const { groupID } = req.body;
 
   try {
-    await pool.query(
-      "DELETE FROM Groups WHERE groupID = $1",
-      [groupID]
-    );
+    await pool.query("DELETE FROM Groups WHERE groupID = $1", [groupID]);
 
     res.status(200).json({ message: "Group deleted successfully" });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
   }
-}
+};
 
 // Fungsi untuk menyinkronkan jadwal anggota dalam grup
 const syncSchedules = async (req, res) => {
@@ -92,37 +93,43 @@ const syncSchedules = async (req, res) => {
     // Ambil data jadwal anggota grup
     const schedules = await pool.query(
       "SELECT Schedules.scheduleData FROM Schedules " +
-      "JOIN GroupMembers ON Schedules.owner = GroupMembers.userID " +
-      "WHERE GroupMembers.groupID = $1",
+        "JOIN GroupMembers ON Schedules.owner = GroupMembers.userID " +
+        "WHERE GroupMembers.groupID = $1",
       [groupID]
     );
 
     if (schedules.rows.length === 0) {
-      return res.status(404).json({ error: "No schedules found for the given group ID" });
+      return res
+        .status(404)
+        .json({ error: "No schedules found for the given group ID" });
     }
 
     console.log("Schedules raw data:", schedules.rows);
 
     // Parse data jadwal ke dalam format JSON
-    const allSchedules = schedules.rows.map(row => {
-      try {
-        if (typeof row.scheduledata === "string") {
-          return JSON.parse(row.scheduledata); // Jika data adalah string JSON
-        } else if (typeof row.scheduledata === "object") {
-          return row.scheduledata; // Jika data sudah berupa objek
-        } else {
-          throw new Error("Invalid scheduleData format");
+    const allSchedules = schedules.rows
+      .map((row) => {
+        try {
+          if (typeof row.scheduledata === "string") {
+            return JSON.parse(row.scheduledata); // Jika data adalah string JSON
+          } else if (typeof row.scheduledata === "object") {
+            return row.scheduledata; // Jika data sudah berupa objek
+          } else {
+            throw new Error("Invalid scheduleData format");
+          }
+        } catch (err) {
+          console.error("Failed to parse scheduleData:", err.message);
+          return null;
         }
-      } catch (err) {
-        console.error("Failed to parse scheduleData:", err.message);
-        return null;
-      }
-    }).filter(data => data !== null); // Hanya jadwal yang berhasil diparsing
+      })
+      .filter((data) => data !== null); // Hanya jadwal yang berhasil diparsing
 
     console.log("Parsed schedules:", allSchedules);
 
     if (allSchedules.length === 0) {
-      return res.status(400).json({ error: "No valid schedules found for synchronization" });
+      return res
+        .status(400)
+        .json({ error: "No valid schedules found for synchronization" });
     }
 
     // Gabungkan semua jadwal berdasarkan hari
@@ -137,21 +144,25 @@ const syncSchedules = async (req, res) => {
       [groupID, JSON.stringify({ weeklySchedule, freeTime })]
     );
 
-    res.status(200).json({ message: "Schedules synced successfully", sync: newSync.rows[0] });
+    res
+      .status(200)
+      .json({
+        message: "Schedules synced successfully",
+        sync: newSync.rows[0],
+      });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
   }
 };
 
-
 // Fungsi untuk menggabungkan jadwal mingguan dari semua anggota
 function mergeWeeklySchedules(allSchedules) {
   const mergedSchedule = {};
 
-  allSchedules.forEach(userSchedule => {
+  allSchedules.forEach((userSchedule) => {
     // Iterasi melalui hari (Monday, Tuesday, ...)
-    Object.keys(userSchedule).forEach(day => {
+    Object.keys(userSchedule).forEach((day) => {
       if (!mergedSchedule[day]) {
         mergedSchedule[day] = [];
       }
@@ -162,8 +173,10 @@ function mergeWeeklySchedules(allSchedules) {
 
   // Urutkan jadwal per hari berdasarkan waktu mulai
   for (const day in mergedSchedule) {
-    mergedSchedule[day].sort((a, b) => 
-      new Date(`1970-01-01T${a.startTime}`) - new Date(`1970-01-01T${b.startTime}`)
+    mergedSchedule[day].sort(
+      (a, b) =>
+        new Date(`1970-01-01T${a.startTime}`) -
+        new Date(`1970-01-01T${b.startTime}`)
     );
   }
 
@@ -179,7 +192,7 @@ function findFreeTime(weeklySchedule) {
     const dayFreeTime = [];
     let currentEnd = "00:00:00";
 
-    daySchedule.forEach(event => {
+    daySchedule.forEach((event) => {
       if (currentEnd < event.startTime) {
         dayFreeTime.push({ startTime: currentEnd, endTime: event.startTime });
       }
@@ -197,7 +210,6 @@ function findFreeTime(weeklySchedule) {
   return freeTime;
 }
 
-
 // Fungsi untuk mengambil member grup dan melihat status sudah set schedule atau belum
 const getGroupMembers = async (req, res) => {
   const { groupID } = req.params;
@@ -205,16 +217,18 @@ const getGroupMembers = async (req, res) => {
   try {
     const members = await pool.query(
       "SELECT Users.username, GroupMembers.userID, " +
-      "CASE WHEN Schedules.scheduleData IS NOT NULL THEN true ELSE false END AS hasSchedule " +
-      "FROM Users " +
-      "JOIN GroupMembers ON Users.userID = GroupMembers.userID " +
-      "LEFT JOIN Schedules ON Users.userID = Schedules.owner " +
-      "WHERE GroupMembers.groupID = $1",
+        "CASE WHEN Schedules.scheduleData IS NOT NULL THEN true ELSE false END AS hasSchedule " +
+        "FROM Users " +
+        "JOIN GroupMembers ON Users.userID = GroupMembers.userID " +
+        "LEFT JOIN Schedules ON Users.userID = Schedules.owner " +
+        "WHERE GroupMembers.groupID = $1",
       [groupID]
     );
 
     if (members.rows.length === 0) {
-      return res.status(404).json({ error: "No members found for the given group ID" });
+      return res
+        .status(404)
+        .json({ error: "No members found for the given group ID" });
     }
 
     res.status(200).json({ members: members.rows });
@@ -267,10 +281,14 @@ const getSyncedSchedule = async (req, res) => {
     );
 
     if (syncedSchedule.rows.length === 0) {
-      return res.status(404).json({ error: "No synced schedule found for the given group ID" });
+      return res
+        .status(404)
+        .json({ error: "No synced schedule found for the given group ID" });
     }
 
-    res.status(200).json({ syncedSchedule: JSON.parse(syncedSchedule.rows[0].synceddata) });
+    res
+      .status(200)
+      .json({ syncedSchedule: JSON.parse(syncedSchedule.rows[0].synceddata) });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
@@ -279,7 +297,9 @@ const getSyncedSchedule = async (req, res) => {
 
 const getAllGroups = async (req, res) => {
   try {
-    const groups = await pool.query("SELECT * FROM Groups ORDER BY created_at DESC");
+    const groups = await pool.query(
+      "SELECT * FROM Groups ORDER BY created_at DESC"
+    );
 
     if (groups.rows.length === 0) {
       return res.status(404).json({ error: "No groups found" });
@@ -301,5 +321,5 @@ module.exports = {
   getGroupMembers,
   joinGroup,
   getSyncedSchedule,
-  getAllGroups
+  getAllGroups,
 };

@@ -2,11 +2,12 @@ require("dotenv").config();
 const express = require("express");
 const pool = require("./db");
 const bodyParser = require("body-parser");
-const cors = require("cors"); // Import cors middleware
+const cors = require("cors");
 const accountRoutes = require("./routes/account");
 const groupRoutes = require("./routes/group");
 const scheduleRoutes = require("./routes/schedule");
 const ocrRoutes = require("./routes/ocr");
+const session = require("express-session");
 
 const app = express();
 
@@ -17,10 +18,22 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true, // Allow credentials
   })
-);  
+);
 // Middleware for parsing JSON and urlencoded data
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: "key",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      domain: "localhost",
+      maxAge: 24 * 60 * 60 * 1000,
+      secure: false,
+    },
+  })
+);
 
 // Routes
 app.use("/account", accountRoutes);
