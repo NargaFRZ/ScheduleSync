@@ -85,6 +85,27 @@ const deleteGroup = async (req, res) => {
   }
 };
 
+// Fungsi untuk mengubah grup
+const editGroup = async (req, res) => {
+  const { groupID, groupName } = req.body;
+
+  try {
+    const updatedGroup = await pool.query(
+      "UPDATE Groups SET groupName = $1 WHERE groupID = $2 RETURNING *",
+      [groupName, groupID]
+    );
+  
+    if (updatedGroup.rows.length === 0) {
+      return res.status(404).json({ error: "Group not found" });
+    }
+
+    res.status(200).json({ message: "Group updated successfully", group: updatedGroup.rows[0] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+}
+
 // Fungsi untuk menyinkronkan jadwal anggota dalam grup
 const syncSchedules = async (req, res) => {
   const { groupID } = req.body;
@@ -312,6 +333,52 @@ const getAllGroups = async (req, res) => {
   }
 };
 
+// Fungsi untuk mengambil grup yang diikuti oleh user
+const getGroupsByUser = async (req, res) => {
+  const { userID } = req.params;
+
+  try {
+    const groups = await pool.query(
+      "SELECT Groups.groupID, Groups.groupName, Groups.inviteCode, Groups.created_at " +
+      "FROM Groups " +
+      "JOIN GroupMembers ON Groups.groupID = GroupMembers.groupID " +
+      "WHERE GroupMembers.userID = $1 " +
+      "ORDER BY Groups.created_at DESC",
+      [userID]
+    );
+
+    if (groups.rows.length === 0) {
+      return res.status(404).json({ error: "No groups found for the given user ID" });
+    }
+
+    res.status(200).json({ groups: groups.rows });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Fungsi mengambil grup yang dibuat oleh user
+const getGroupsByOwner = async (req, res) => {
+  const { userID } = req.params;
+
+  try {
+    const groups = await pool.query(
+      "SELECT * FROM Groups WHERE created_by = $1 ORDER BY created_at DESC",
+      [userID]
+    );
+
+    if (groups.rows.length === 0) {
+      return res.status(404).json({ error: "No groups found for the given user ID" });
+    }
+
+    res.status(200).json({ groups: groups.rows });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   createGroup,
   addMember,
@@ -322,4 +389,7 @@ module.exports = {
   joinGroup,
   getSyncedSchedule,
   getAllGroups,
+  getGroupsByUser,
+  getGroupsByOwner,
+  editGroup
 };

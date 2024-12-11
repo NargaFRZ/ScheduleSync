@@ -11,5 +11,8 @@ router.get('/get-members/:groupID', groupController.getGroupMembers);
 router.post('/join', groupController.joinGroup);
 router.get('/synced-schedule/:groupID', groupController.getSyncedSchedule);
 router.get('/', groupController.getAllGroups);
+router.put('/update', groupController.editGroup);
+router.get('/get-group/:userID', groupController.getGroupsByUser);
+router.get('/get-group-owner/:groupID', groupController.getGroupsByOwner);
 
 module.exports = router;
