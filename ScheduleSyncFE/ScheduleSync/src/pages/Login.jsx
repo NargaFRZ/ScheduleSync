@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { loginUser } from "../actions/account.actions"; // Import the action
+import { loginUser } from "../actions/account.actions";
+import { useNavigate } from "react-router-dom";
 import SSLogo from "../assets/SyncLogoWhite.svg";
 
 const Login = () => {
@@ -7,7 +8,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -16,7 +17,7 @@ const Login = () => {
     const response = await loginUser({ email, password });
     if (response.success) {
       setSuccess("Login successful!");
-      // Redirect or perform any success actions
+      navigate("/yourschedule")
     } else {
       setError(response.data.error || "Failed to login.");
     }
@@ -27,11 +28,16 @@ const Login = () => {
       <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-900 px-4">
         <div className="flex flex-col-reverse md:flex-row items-center justify-center md:space-x-12 w-full max-w-4xl">
           <div className="w-full max-w-sm">
-            <h1 className="text-4xl font-bold text-white text-left mb-6">Login</h1>
+            <h1 className="text-4xl font-bold text-white text-left mb-6">
+              Login
+            </h1>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="email" className="block text-white font-medium mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-white font-medium mb-2"
+                >
                   Email
                 </label>
                 <input
@@ -44,7 +50,10 @@ const Login = () => {
                 />
               </div>
               <div>
-                <label htmlFor="password" className="block text-white font-medium mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-white font-medium mb-2"
+                >
                   Password
                 </label>
                 <input
@@ -68,13 +77,20 @@ const Login = () => {
 
             <p className="text-left text-white mt-6">
               Don’t have an account?{" "}
-              <a href="/signup" className="text-blue-500 font-medium hover:underline">
+              <a
+                href="/signup"
+                className="text-blue-500 font-medium hover:underline"
+              >
                 SignUp
               </a>
             </p>
           </div>
           <div className="flex justify-center md:justify-end w-full md:w-auto">
-            <img src={SSLogo} alt="ScheduleSync Logo" className="h-40 md:h-48" />
+            <img
+              src={SSLogo}
+              alt="ScheduleSync Logo"
+              className="h-40 md:h-48"
+            />
           </div>
         </div>
       </div>

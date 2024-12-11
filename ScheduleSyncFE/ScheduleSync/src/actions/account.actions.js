@@ -10,7 +10,7 @@ const baseApiResponse = (data, isSuccess) => {
 // Register a new user
 export const registerUser = async (userData) => {
   try {
-    const response = await instance.post("/register", userData); // POST to /register
+    const response = await instance.post("/account/register", userData); // POST to /register
     return baseApiResponse(response.data, true); // Return success response
   } catch (error) {
     console.error("Error registering user:", error.response?.data || error.message);
@@ -21,7 +21,7 @@ export const registerUser = async (userData) => {
 // Login an existing user
 export const loginUser = async (userData) => {
   try {
-    const response = await instance.post("/login", userData); // POST to /login
+    const response = await instance.post("/account/login", userData); // POST to /login
     return baseApiResponse(response.data, true); // Return success response
   } catch (error) {
     console.error("Error logging in user:", error.response?.data || error.message);

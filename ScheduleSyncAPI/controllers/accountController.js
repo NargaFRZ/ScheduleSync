@@ -10,7 +10,7 @@ const validateEmail = (email) => {
 
 const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
-
+  console.log(req.body)
   if (!validateEmail(email)) {
     return res.status(400).json({ error: "Invalid email format" });
   }
@@ -45,7 +45,7 @@ const loginUser = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ error: "Incorrect password" });
     }
-
+    
     res.status(200).json({ message: "Login successful", user: user.rows[0] });
   } catch (err) {
     console.error(err.message);
