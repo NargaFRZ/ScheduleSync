@@ -1,21 +1,38 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import NavBar from "../components/NavBarLogout";
 import arrow from "../assets/icons/ArrowVector.svg";
 import { useNavigate } from "react-router-dom";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { imageDb } from "../actions/firebase";
+import { v4 } from "uuid";
 
 const AddSchedule = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null); // Reference to the file input
+  const [formData, setFormData] = useState({}); // State to store form data
 
   const handleFileInputClick = () => {
     fileInputRef.current.click(); // Programmatically trigger the file input
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const files = event.target.files; // Access selected files
     if (files.length > 0) {
-      console.log("Selected files:", files);
-      // You can add your logic to upload or preview files here
+      const file = files[0]; // Get the first file
+      try {
+        // Upload file to Firebase
+        const ImageRef = ref(imageDb, `files/${v4()}`);
+        await uploadBytes(ImageRef, file);
+        const fileURL = await getDownloadURL(ImageRef);
+
+        // Update form data with file URL
+        const updatedFormData = { ...formData, file_path: fileURL };
+        setFormData(updatedFormData);
+
+        console.log("File uploaded successfully:", fileURL);
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      }
     }
   };
 
