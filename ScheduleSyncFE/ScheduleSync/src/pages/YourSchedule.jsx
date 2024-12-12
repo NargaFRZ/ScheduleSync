@@ -69,27 +69,28 @@ const YourSchedule = () => {
               <img
                 src={scheduleImageUrl}
                 alt="Schedule"
-                className="object-contain w-3/4 h-80"
+                className="w-full h-full object-cover"
+                style={{ objectFit: "cover" }} // Stretch the image fully to fill the container
               />
             ) : (
-              <p className="text-xl text-gray-500">
-                No schedule image available. Add a schedule to view it.
-              </p>
+              <>
+                <p className="text-xl text-gray-500">
+                  No schedule image available. Add a schedule to view it.
+                </p>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <h1 className="text-6xl font-bold mb-4">Oh, No!</h1>
+                  <p className="text-xl mb-6">
+                    It seems like you haven’t added your schedule yet!
+                  </p>
+                  <button
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow"
+                    onClick={() => navigate("/add-schedule")}
+                  >
+                    Add Your Schedule
+                  </button>
+                </div>
+              </>
             )}
-          </div>
-
-          {/* Main content */}
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <h1 className="text-6xl font-bold mb-4">Oh, No!</h1>
-            <p className="text-xl mb-6">
-              It seems like you haven’t added your schedule yet!
-            </p>
-            <button
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow"
-              onClick={() => navigate("/add-schedule")}
-            >
-              Add Your Schedule
-            </button>
           </div>
 
           <footer className="text-center py-4 bg-blue-900 w-full fixed bottom-0 left-0">
