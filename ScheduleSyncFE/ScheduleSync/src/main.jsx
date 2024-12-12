@@ -14,6 +14,7 @@ import EditProfile from './pages/EditProfile.jsx';
 import AddSchedule from './pages/AddSchedule.jsx';
 import EditSchedule from './pages/EditSchedule.jsx';
 import EditGroupInfo from './pages/EditGroupInfo.jsx';
+import JoinGroup from './pages/JoinGroup.jsx';
 
 const router = createBrowserRouter([
   {
@@ -65,6 +66,8 @@ const router = createBrowserRouter([
     element: <EditSchedule/>
   },
   {
+    path: 'join-group',
+    element: <JoinGroup/>
   }
 ]);
 

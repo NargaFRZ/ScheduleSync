@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import calendarIcon from "../assets/icons/uil_calender.svg";
 import groupsIcon from "../assets/icons/groups.svg";
-import lockIcon from "../assets/icons/Lock_alt.svg";
+import ArrowWhite from "../assets/icons/ArrowVectorWhite.svg";
 import editIcon from "../assets/icons/edit_square.svg";
 import edit from "../assets/icons/edit.svg";
 
@@ -13,6 +13,7 @@ const SideBar = ({ name, email }) => {
     { name: "Your Schedule", path: "/yourschedule", icon: calendarIcon },
     { name: "Your Groups", path: "/groups", icon: groupsIcon },
     { name: "Edit Group", path: "/edit-group", icon: editIcon },
+    { name: "Join Group", path: "/join-group", icon: ArrowWhite },
   ];
 
   return (
