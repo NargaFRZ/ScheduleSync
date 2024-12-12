@@ -4,6 +4,7 @@ import NavBar from "../components/NavBarLogout";
 import SideBar from "../components/SideBar";
 import { fetchGroupsByUser } from "../actions/group.actions";
 import { fetchUserData } from "../actions/account.actions";
+import { getCountMember } from "../actions/group.actions"; // Import getCountMember
 
 const Groups = () => {
   const [user, setUser] = useState(null); // State to hold the user data
@@ -25,12 +26,20 @@ const Groups = () => {
 
           // Fetch groups by user ID
           const userGroupsResponse = await fetchGroupsByUser(userData.userid);
-          console.log(userGroupsResponse)
           if (userGroupsResponse.success) {
-            setGroups(userGroupsResponse.data.groups); // Set the merged groups
+            const groupsWithMemberCount = await Promise.all(
+              userGroupsResponse.data.groups.map(async (group) => {
+                // Fetch number of members in each group
+                const countResponse = await getCountMember(group.groupid);
+                return {
+                  ...group,
+                  memberCount: countResponse.success ? countResponse.data.memberCount : 0,
+                };
+              })
+            );
+            setGroups(groupsWithMemberCount); // Set the groups with member count
           } else {
-            // Handle empty or failed responses
-            setGroups([]);
+            setGroups([]); // Handle empty or failed responses
           }
         } else {
           throw new Error("Failed to fetch user data.");
@@ -90,9 +99,9 @@ const Groups = () => {
                     className="bg-blue-900 text-white p-4 rounded shadow hover:shadow-lg transition"
                   >
                     <h2 className="text-lg font-semibold">{group.groupname}</h2>
-                    <p className="mt-2">Entries: {group.entries}</p>
+                    <p className="mt-2">Members: {group.memberCount}</p> {/* Display member count */}
                     <button
-                       onClick={() => navigate(`/groups/group-detail/${group.groupid}`)}
+                      onClick={() => navigate(`/groups/group-detail/${group.groupid}`)}
                       className="mt-4 bg-white text-blue-900 px-4 py-2 rounded hover:bg-gray-100"
                     >
                       Detail

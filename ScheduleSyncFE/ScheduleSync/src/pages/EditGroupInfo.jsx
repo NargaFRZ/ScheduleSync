@@ -33,7 +33,7 @@ const EditGroupInfo = () => {
           const groupData = response.data.groups[0];
           console.log("Group Data:", groupData); // Log the fetched group data
           setGroup(groupData); // Update group state
-          setGroupName(groupData.groupName || ""); // Update group name input
+          setGroupName(groupData.groupname); // Update group name input
 
           // Fetch number of members in the group
           const countResponse = await getCountMember(groupid);

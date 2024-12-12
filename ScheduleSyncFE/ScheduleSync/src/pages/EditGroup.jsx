@@ -4,7 +4,7 @@ import SideBar from "../components/SideBar";
 import PopupAddGroup from "../components/PopupAddGroup";
 import PopupDeleteGroup from "../components/PopupDeleteGroup";
 import PopupSaveEditGroup from "../components/PopupSaveEditGroup";
-import { fetchGroupsByOwner, deleteGroup } from "../actions/group.actions";
+import { fetchGroupsByOwner, deleteGroup, getCountMember } from "../actions/group.actions"; // Import getCountMember
 import { fetchUserData } from "../actions/account.actions";
 import { useNavigate } from "react-router-dom";
 
@@ -27,9 +27,20 @@ const EditGroup = () => {
         if (userResponse.success) {
           const userData = userResponse.data;
           setUser({ name: userData.username, email: userData.email });
+
           const groupResponse = await fetchGroupsByOwner(userData.userid);
           if (groupResponse.success) {
-            setGroups(groupResponse.data.groups || []); // Fallback to empty array
+            // Fetch member count for each group
+            const groupsWithMemberCount = await Promise.all(
+              groupResponse.data.groups.map(async (group) => {
+                const countResponse = await getCountMember(group.groupid);
+                return {
+                  ...group,
+                  memberCount: countResponse.success ? countResponse.data.memberCount : 0,
+                };
+              })
+            );
+            setGroups(groupsWithMemberCount);
           } else {
             console.error("Error fetching groups:", groupResponse.data);
           }
@@ -50,7 +61,7 @@ const EditGroup = () => {
   const handleDelete = async (groupID) => {
     const response = await deleteGroup(groupID);
     if (response.success) {
-      setGroups((prev) => prev.filter((group) => group._id !== groupID));
+      setGroups((prev) => prev.filter((group) => group.groupid !== groupID));
       setShowDeletePopup(false);
     } else {
       console.error("Error deleting group:", response.data);
@@ -110,7 +121,7 @@ const EditGroup = () => {
                 >
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-semibold">{group.groupname}</h2>
-                    <p className="text-sm">Entries: {group.entries || 0}</p>
+                    <p className="text-sm">Members: {group.memberCount}</p> {/* Display member count */}
                   </div>
                   <div className="bg-gray-100 text-blue-900 p-3 rounded">
                     <p className="text-sm">
@@ -120,7 +131,7 @@ const EditGroup = () => {
                   <div className="mt-4 flex justify-between">
                     <button
                       className="bg-white text-blue-900 px-3 py-1 rounded hover:bg-gray-100"
-                      onClick={() => navigate(`/edit-group-info/${group._id}`)}
+                      onClick={() => navigate(`/edit-group-info/${group.groupid}`)}
                     >
                       Edit
                     </button>
@@ -152,13 +163,13 @@ const EditGroup = () => {
         <PopupDeleteGroup
           group={selectedGroup}
           onClose={() => setShowDeletePopup(false)}
-          onDeleteGroup={(deletedGroupId) => handleDelete(deletedGroupId)}
+          onDelete={() => handleDelete(selectedGroup.groupid)}
         />
       )}
       {showSavePopup && (
         <PopupSaveEditGroup
           onClose={() => setShowSavePopup(false)}
-          onSaveEditGroup={handleSaveEditGroup}
+          onSave={handleSaveEditGroup}
         />
       )}
     </div>
