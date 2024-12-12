@@ -5,6 +5,7 @@ import PopupAddGroup from "../components/PopupAddGroup";
 import PopupDeleteGroup from "../components/PopupDeleteGroup";
 import { fetchGroupsByOwner, deleteGroup } from "../actions/group.actions";
 import { fetchUserData } from "../actions/account.actions";
+import { useHistory } from "react-router-dom";
 
 const EditGroup = () => {
   const [showPopup, setShowPopup] = useState(false); // State to manage "Add Group" popup visibility
@@ -13,6 +14,7 @@ const EditGroup = () => {
   const [selectedGroup, setSelectedGroup] = useState(null); // State to manage the group being deleted
   const [user, setUser] = useState(null); // State to store user data
   const [loading, setLoading] = useState(false);
+  const history = useHistory();
 
   // Fetch user and group data when the component mounts
   useEffect(() => {
@@ -125,7 +127,9 @@ const EditGroup = () => {
 
                   {/* Action Buttons */}
                   <div className="mt-4 flex justify-between">
-                    <button className="bg-white text-blue-900 px-3 py-1 rounded hover:bg-gray-100">
+                    <button 
+                      className="bg-white text-blue-900 px-3 py-1 rounded hover:bg-gray-100"
+                      onClick={() => history.push(`/edit-group-info/${group._id}`)}>
                       Edit
                     </button>
                     <button
