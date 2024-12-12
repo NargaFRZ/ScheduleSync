@@ -11,7 +11,7 @@ const baseApiResponse = (data, isSuccess) => {
 // Fetch all groups
 export const fetchGroupsByUser = async (userID) => {
   try {
-    const response = await instance.get(`/group/get-group/${userID}`);
+    const response = await instance.get(`/group/get-group-user/${userID}`);
     return baseApiResponse(response.data, true);
   } catch (error) {
     console.error("Error fetching groups by user:", error.response?.data || error.message);
@@ -77,7 +77,6 @@ export const syncSchedules = async (groupID) => {
   }
 };
 
-// Get synced schedule for a group
 export const getSyncedSchedule = async (groupID) => {
   try {
     const response = await instance.get(`/group/synced-schedule/${groupID}`);
@@ -87,3 +86,14 @@ export const getSyncedSchedule = async (groupID) => {
     return baseApiResponse(error.response?.data || "Server error", false);
   }
 };
+
+export const getGroupbyId = async (groupID) => {
+  try {
+    const response = await instance.get(`/group/get-group/${groupID}`);
+    return baseApiResponse(response.data, true);
+  } catch (error) {
+    console.error("Error fetching synced schedule:", error.response?.data || error.message);
+    return baseApiResponse(error.response?.data || "Server error", false);
+  }
+};
+

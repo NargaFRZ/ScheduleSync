@@ -25,6 +25,7 @@ const Groups = () => {
 
           // Fetch groups by user ID
           const userGroupsResponse = await fetchGroupsByUser(userData.userid);
+          console.log(userGroupsResponse)
           if (userGroupsResponse.success) {
             setGroups(userGroupsResponse.data.groups); // Set the merged groups
           } else {

@@ -39,12 +39,25 @@ const createGroup = async (req, res) => {
 
 // Fungsi untuk menambahkan anggota ke grup
 const addMember = async (req, res) => {
-  const { groupID, userID } = req.body;
-
+  const { inviteCode } = req.body; // Get inviteCode and userID from request body
+  userId = getLoggedInUserId(req);
   try {
+    // Fetch groupID based on inviteCode
+    const groupQuery = await pool.query(
+      "SELECT groupID FROM Groups WHERE inviteCode = $1",
+      [inviteCode]
+    );
+
+    if (groupQuery.rows.length === 0) {
+      return res.status(404).json({ error: "Invalid invite code" });
+    }
+
+    const groupID = groupQuery.rows[0].groupid; // Extract groupID
+
+    // Insert the user into GroupMembers
     await pool.query(
       "INSERT INTO GroupMembers (groupID, userID) VALUES ($1, $2)",
-      [groupID, userID]
+      [groupID, userId]
     );
 
     res.status(200).json({ message: "Member added successfully" });
@@ -53,6 +66,8 @@ const addMember = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+module.exports = addMember;
 
 // Fungsi untuk menghapus anggota dari grup
 const removeMember = async (req, res) => {
@@ -94,17 +109,22 @@ const editGroup = async (req, res) => {
       "UPDATE Groups SET groupName = $1 WHERE groupID = $2 RETURNING *",
       [groupName, groupID]
     );
-  
+
     if (updatedGroup.rows.length === 0) {
       return res.status(404).json({ error: "Group not found" });
     }
 
-    res.status(200).json({ message: "Group updated successfully", group: updatedGroup.rows[0] });
+    res
+      .status(200)
+      .json({
+        message: "Group updated successfully",
+        group: updatedGroup.rows[0],
+      });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
   }
-}
+};
 
 // Fungsi untuk menyinkronkan jadwal anggota dalam grup
 const syncSchedules = async (req, res) => {
@@ -165,12 +185,10 @@ const syncSchedules = async (req, res) => {
       [groupID, JSON.stringify({ weeklySchedule, freeTime })]
     );
 
-    res
-      .status(200)
-      .json({
-        message: "Schedules synced successfully",
-        sync: newSync.rows[0],
-      });
+    res.status(200).json({
+      message: "Schedules synced successfully",
+      sync: newSync.rows[0],
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: "Server error" });
@@ -340,15 +358,17 @@ const getGroupsByUser = async (req, res) => {
   try {
     const groups = await pool.query(
       "SELECT Groups.groupID, Groups.groupName, Groups.inviteCode, Groups.created_at " +
-      "FROM Groups " +
-      "JOIN GroupMembers ON Groups.groupID = GroupMembers.groupID " +
-      "WHERE GroupMembers.userID = $1 " +
-      "ORDER BY Groups.created_at DESC",
+        "FROM Groups " +
+        "JOIN GroupMembers ON Groups.groupID = GroupMembers.groupID " +
+        "WHERE GroupMembers.userID = $1 " +
+        "ORDER BY Groups.created_at DESC",
       [userID]
     );
 
     if (groups.rows.length === 0) {
-      return res.status(404).json({ error: "No groups found for the given user ID" });
+      return res
+        .status(404)
+        .json({ error: "No groups found for the given user ID" });
     }
 
     res.status(200).json({ groups: groups.rows });
@@ -369,7 +389,9 @@ const getGroupsByOwner = async (req, res) => {
     );
 
     if (groups.rows.length === 0) {
-      return res.status(404).json({ error: "No groups found for the given user ID" });
+      return res
+        .status(404)
+        .json({ error: "No groups found for the given user ID" });
     }
 
     res.status(200).json({ groups: groups.rows });
@@ -383,7 +405,8 @@ const getGroupbyId = async (req, res) => {
   try {
     const { groupID } = req.params;
     const groups = await pool.query(
-      "SELECT * FROM Groups WHERE  groupID = $1",[groupID]
+      "SELECT * FROM Groups WHERE  groupID = $1",
+      [groupID]
     );
 
     if (groups.rows.length === 0) {
@@ -410,5 +433,5 @@ module.exports = {
   getGroupsByUser,
   getGroupsByOwner,
   editGroup,
-  getGroupbyId
+  getGroupbyId,
 };
