@@ -1,13 +1,22 @@
-import React from "react";
+import React, { useRef } from "react";
 import NavBar from "../components/NavBarLogout";
 import arrow from "../assets/icons/ArrowVector.svg";
 import { useNavigate } from "react-router-dom";
 
 const AddSchedule = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null); // Reference to the file input
 
-  const handleAddClick = () => {
-    navigate("/validate-schedule");
+  const handleFileInputClick = () => {
+    fileInputRef.current.click(); // Programmatically trigger the file input
+  };
+
+  const handleFileChange = (event) => {
+    const files = event.target.files; // Access selected files
+    if (files.length > 0) {
+      console.log("Selected files:", files);
+      // You can add your logic to upload or preview files here
+    }
   };
 
   return (
@@ -20,15 +29,19 @@ const AddSchedule = () => {
         {/* Sidebar */}
         <aside className="absolute top-8 left-8 h-auto w-64 bg-blue-900 text-white flex flex-col px-6 py-8 rounded-2xl shadow-lg">
           <h1 className="text-2xl font-semibold mb-6">Add Your Image Files</h1>
-          <button className="w-full bg-white text-blue-900 py-2 px-4 rounded-lg font-medium flex items-center justify-between hover:bg-blue-300">
+          <button
+            className="w-full bg-white text-blue-900 py-2 px-4 rounded-lg font-medium flex items-center justify-between hover:bg-blue-300"
+            onClick={handleFileInputClick} // Open file explorer
+          >
             Upload Ulang
-            <img src={arrow} alt="Arrow icon" className="h-4 w-4" />{" "}
-            {/* Replace material-icons with arrow icon */}
+            <img src={arrow} alt="Arrow icon" className="h-4 w-4" />
           </button>
-          <button className="w-full bg-white text-blue-900 py-2 px-4 rounded-lg font-medium flex items-center justify-between mt-4 hover:bg-blue-300">
+          <button
+            className="w-full bg-white text-blue-900 py-2 px-4 rounded-lg font-medium flex items-center justify-between mt-4 hover:bg-blue-300"
+            onClick={handleFileInputClick} // Open file explorer
+          >
             Add to Schedule
-            <img src={arrow} alt="Arrow icon" className="h-4 w-4" />{" "}
-            {/* Replace material-icons with arrow icon */}
+            <img src={arrow} alt="Arrow icon" className="h-4 w-4" />
           </button>
         </aside>
 
@@ -45,12 +58,21 @@ const AddSchedule = () => {
 
           {/* Add Button */}
           <button
-            onClick={handleAddClick}
+            onClick={handleFileInputClick}
             className="mt-6 bg-blue-900 text-white py-2 px-6 rounded-lg font-medium flex items-center hover:bg-blue-700"
           >
             Add
             <span className="ml-2 text-xl font-bold">+</span>
           </button>
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange} // Handle file selection
+          />
         </main>
       </div>
     </div>
