@@ -11,6 +11,7 @@ const baseApiResponse = (data, isSuccess) => {
 // Upload a new schedule
 export const uploadSchedule = async (scheduleData) => {
   try {
+    console.log("data fe",scheduleData);
     const response = await instance.post("/schedule/upload", scheduleData);
     return baseApiResponse(response.data, true);
   } catch (error) {
@@ -46,7 +47,7 @@ export const deleteSchedule = async (scheduleID) => {
 // Get schedules by owner
 export const getSchedulesByOwner = async (ownerID) => {
     try {
-      const response = await instance.get(`/schedule/schedulesByOwner/${ownerID}`);
+      const response = await instance.get(`/schedule/schedulesByOwner`);
       return baseApiResponse(response.data, true);
     } catch (error) {
       console.error("Error fetching schedules by owner:", error.response?.data || error.message);

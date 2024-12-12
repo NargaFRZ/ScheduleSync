@@ -5,14 +5,16 @@ const {
 
 // Fungsi untuk mengunggah jadwal baru
 const uploadSchedule = async (req, res) => {
-  const { owner, scheduleData } = req.body;
-
+  const scheduleData  = req.body;
+  owner = getLoggedInUserId(req);
+  console.log("owner:",owner);
+  console.log("schedule data:",scheduleData);
   try {
     const newSchedule = await pool.query(
-      "INSERT INTO Schedules (owner, scheduleData, isValidated) VALUES ($1, $2, $3) RETURNING *",
-      [owner, scheduleData, true]
+      "INSERT INTO Schedules (owner, scheduledata) VALUES ($1, $2) RETURNING *",
+      [owner, scheduleData]
     );
-
+    
     res.status(201).json({ message: "Schedule uploaded successfully", schedule: newSchedule.rows[0] });
   } catch (err) {
     console.error(err.message);
