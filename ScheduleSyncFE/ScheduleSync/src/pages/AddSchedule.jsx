@@ -5,11 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { imageDb } from "../actions/firebase";
 import { v4 } from "uuid";
+import { fetchUserData } from "../actions/account.actions";
+import { uploadSchedule } from "../actions/schedule.actions";
 
 const AddSchedule = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null); // Reference to the file input
   const [formData, setFormData] = useState({}); // State to store form data
+  const [imagePreview, setImagePreview] = useState(""); // State for image preview
 
   const handleFileInputClick = () => {
     fileInputRef.current.click(); // Programmatically trigger the file input
@@ -28,11 +31,37 @@ const AddSchedule = () => {
         // Update form data with file URL
         const updatedFormData = { ...formData, file_path: fileURL };
         setFormData(updatedFormData);
+        setImagePreview(fileURL); // Set image preview
 
         console.log("File uploaded successfully:", fileURL);
       } catch (error) {
         console.error("Error uploading file:", error);
       }
+    }
+  };
+
+  const handleAddSchedule = async () => {
+    try {
+      const userResponse = await fetchUserData();
+      const userId = userResponse?.data.userid; // Extract user ID from response
+
+      if (!userId || !formData.file_path) {
+        console.error("User ID or file path is missing.");
+        return;
+      }
+
+      const payload = {
+        userId,
+        metadata: {
+          url: formData.file_path,
+        },
+      };
+
+      await uploadSchedule(payload);
+      console.log("Schedule uploaded successfully");
+      navigate("/yourschedule"); // Navigate to schedule page
+    } catch (error) {
+      console.error("Error uploading schedule:", error);
     }
   };
 
@@ -55,7 +84,7 @@ const AddSchedule = () => {
           </button>
           <button
             className="w-full bg-white text-blue-900 py-2 px-4 rounded-lg font-medium flex items-center justify-between mt-4 hover:bg-blue-300"
-            onClick={handleFileInputClick} // Open file explorer
+            onClick={handleAddSchedule} // Add to schedule
           >
             Add to Schedule
             <img src={arrow} alt="Arrow icon" className="h-4 w-4" />
@@ -67,10 +96,20 @@ const AddSchedule = () => {
           <h1 className="text-4xl font-semibold mb-6">Add Schedules</h1>
           {/* Placeholder for Image */}
           <div className="flex flex-col items-center justify-center border-2 border-dashed border-blue-300 rounded-lg w-3/4 h-80">
-            <p className="text-gray-500">[Schedule Image Placeholder]</p>
-            <p className="text-sm text-gray-400">
-              (Gambar akan diambil dari Firebase)
-            </p>
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Uploaded Preview"
+                className="object-contain w-full h-full"
+              />
+            ) : (
+              <>
+                <p className="text-gray-500">[Schedule Image Placeholder]</p>
+                <p className="text-sm text-gray-400">
+                  (Gambar akan diambil dari Firebase)
+                </p>
+              </>
+            )}
           </div>
 
           {/* Add Button */}
