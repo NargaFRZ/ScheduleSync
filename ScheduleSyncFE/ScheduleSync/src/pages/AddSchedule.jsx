@@ -1,8 +1,15 @@
 import React from "react";
 import NavBar from "../components/NavBarLogout";
 import arrow from "../assets/icons/ArrowVector.svg";
+import { useNavigate } from "react-router-dom";
 
 const AddSchedule = () => {
+  const navigate = useNavigate();
+
+  const handleAddClick = () => {
+    navigate("/validate-schedule");
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-blue-900">
       {/* Navigation Bar */}
@@ -37,7 +44,10 @@ const AddSchedule = () => {
           </div>
 
           {/* Add Button */}
-          <button className="mt-6 bg-blue-900 text-white py-2 px-6 rounded-lg font-medium flex items-center hover:bg-blue-700">
+          <button
+            onClick={handleAddClick}
+            className="mt-6 bg-blue-900 text-white py-2 px-6 rounded-lg font-medium flex items-center hover:bg-blue-700"
+          >
             Add
             <span className="ml-2 text-xl font-bold">+</span>
           </button>

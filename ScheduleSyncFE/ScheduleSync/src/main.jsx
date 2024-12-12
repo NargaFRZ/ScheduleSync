@@ -15,6 +15,7 @@ import AddSchedule from './pages/AddSchedule.jsx';
 import EditSchedule from './pages/EditSchedule.jsx';
 import EditGroupInfo from './pages/EditGroupInfo.jsx';
 import JoinGroup from './pages/JoinGroup.jsx';
+import ValidateSchedule from './pages/ValidateSchedule.jsx';
 
 const router = createBrowserRouter([
   {
@@ -68,7 +69,11 @@ const router = createBrowserRouter([
   {
     path: 'join-group',
     element: <JoinGroup/>
-  }
+  },
+  {
+    path: 'validate-schedule',
+    element: <ValidateSchedule/>
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
