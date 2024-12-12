@@ -15,5 +15,6 @@ router.put('/update', groupController.editGroup);
 router.get('/get-group-user/:userID', groupController.getGroupsByUser);
 router.get('/get-group-owner/:userID', groupController.getGroupsByOwner);
 router.get('/get-group/:groupID',groupController.getGroupbyId);
+router.get('/count-members/:groupID',groupController.countGroupMembers);
 
 module.exports = router;

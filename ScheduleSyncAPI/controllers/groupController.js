@@ -67,7 +67,6 @@ const addMember = async (req, res) => {
   }
 };
 
-module.exports = addMember;
 
 // Fungsi untuk menghapus anggota dari grup
 const removeMember = async (req, res) => {
@@ -420,6 +419,35 @@ const getGroupbyId = async (req, res) => {
   }
 };
 
+const countGroupMembers = async (req, res) => {
+  const { groupID } = req.params; // assuming groupID is passed as a URL parameter
+  
+  try {
+    const query = `
+      SELECT COUNT(*) 
+      FROM GroupMembers 
+      WHERE groupID = $1
+    `;
+    
+    const result = await pool.query(query, [groupID]);
+
+    // Extract the count from the result
+    const memberCount = result.rows[0].count;
+
+    res.status(200).json({
+      success: true,
+      groupID,
+      memberCount
+    });
+  } catch (error) {
+    console.error("Error counting group members:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while counting group members."
+    });
+  }
+};
+
 module.exports = {
   createGroup,
   addMember,
@@ -434,4 +462,5 @@ module.exports = {
   getGroupsByOwner,
   editGroup,
   getGroupbyId,
+  countGroupMembers,
 };

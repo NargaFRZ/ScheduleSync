@@ -97,3 +97,12 @@ export const getGroupbyId = async (groupID) => {
   }
 };
 
+export const getCountMember = async (groupID) => {
+  try {
+    const response = await instance.get(`/group/count-members/${groupID}`);
+    return baseApiResponse(response.data, true);
+  } catch (error) {
+    console.error("Error fetching synced schedule:", error.response?.data || error.message);
+    return baseApiResponse(error.response?.data || "Server error", false);
+  }
+};

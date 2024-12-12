@@ -3,11 +3,11 @@ import NavBar from "../components/NavBarLogout";
 import SideBar from "../components/SideBar";
 import PopupDeleteGroup from "../components/PopupDeleteGroup";
 import PopupSaveEditGroup from "../components/PopupSaveEditGroup";
-import { fetchGroupsByUser, deleteGroup } from "../actions/group.actions";
+import { getGroupbyId, deleteGroup, getCountMember } from "../actions/group.actions";
 import { useParams, useNavigate } from "react-router-dom";
 
 const EditGroupInfo = () => {
-  const groupId = useParams(); // Get group ID from route params
+  const { groupid } = useParams(); // Get group ID from route params
   const navigate = useNavigate();
 
   const [group, setGroup] = useState(null); // State to store group details
@@ -15,31 +15,51 @@ const EditGroupInfo = () => {
   const [showDeletePopup, setShowDeletePopup] = useState(false); // Delete popup visibility
   const [showSavePopup, setShowSavePopup] = useState(false); // Save popup visibility
   const [groupName, setGroupName] = useState(""); // Group name input
+  const [memberCount, setMemberCount] = useState(0); // State to store number of members
 
   // Fetch group details when the component mounts
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Set loading to true at the start
       try {
-        const response = await fetchGroupsByUser();
-        if (response.success) {
-          setGroup(response.data);
-          setGroupName(response.data.groupName); // Initialize input field
+        // Fetch group details by ID
+        const response = await getGroupbyId(groupid);
+        console.log("API Response:", response); // Log the API response
+        if (
+          response.success &&
+          response.data.groups &&
+          response.data.groups[0]
+        ) {
+          const groupData = response.data.groups[0];
+          console.log("Group Data:", groupData); // Log the fetched group data
+          setGroup(groupData); // Update group state
+          setGroupName(groupData.groupName || ""); // Update group name input
+
+          // Fetch number of members in the group
+          const countResponse = await getCountMember(groupid);
+          console.log("Member Count Response:", countResponse);
+          if (countResponse.success) {
+            setMemberCount(countResponse.data.memberCount); // Update the member count
+          } else {
+            console.error("Failed to fetch member count:", countResponse.message);
+          }
         } else {
-          console.error("Failed to fetch group details", response.message);
+          console.error("Failed to fetch group details:", response.message);
         }
       } catch (error) {
         console.error("Error fetching group details:", error);
       } finally {
-        setLoading(false);
+        setLoading(false); // Set loading to false at the end
       }
     };
+
     fetchData();
-  }, [groupId]);
+  }, [groupid]);
 
   // Handle group deletion
   const handleDeleteGroup = async () => {
     try {
-      const response = await deleteGroup(groupId);
+      const response = await deleteGroup(groupid);
       if (response.success) {
         navigate("/your-groups"); // Redirect to groups list after deletion
       } else {
@@ -72,26 +92,26 @@ const EditGroupInfo = () => {
         <div className="flex-1 flex flex-col px-6 py-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-4xl font-bold">{group.groupName}</h1>
-            <div className="text-sm text-gray-500">Created on {new Date(group.createdAt).toLocaleDateString()}</div>
+            <div className="text-sm text-gray-500">
+              Created on {new Date(group.created_at).toLocaleDateString()}
+            </div>
           </div>
 
-          <div className="bg-gray-100 p-6 rounded-lg shadow">
-            <div className="mb-4">
-              <label htmlFor="groupName" className="block font-medium text-gray-700">
-                Group Name
-              </label>
+          <div className="bg-blue-900 p-8 rounded-lg text-white w-full max-w-2xl mx-auto">
+            <div className="mb-6">
+              <label className="block text-sm mb-2">Group Name</label>
               <input
                 type="text"
-                id="groupName"
                 value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                onChange={(e) => setGroupName(e.target.value)} // Fix: Change handler to set group name
+                className="w-full px-4 py-2 rounded-lg text-blue-900 bg-white"
+                placeholder={group.groupName}
               />
             </div>
 
             <div className="mb-4">
-              <p className="font-medium">Number of Entries:</p>
-              <p>{group.numberOfEntries || 0} Members</p>
+              <p className="font-medium">Number of Members:</p>
+              <p>{memberCount} Members</p> {/* Display member count */}
             </div>
 
             <div className="flex space-x-4">
@@ -114,7 +134,9 @@ const EditGroupInfo = () => {
 
       {/* Footer */}
       <footer className="text-center py-4 bg-blue-900 w-full">
-        <p className="text-sm text-white">© 2024 ScheduleSync - Group 17 Rekayasa Perangkat Lunak</p>
+        <p className="text-sm text-white">
+          © 2024 ScheduleSync - Group 17 Rekayasa Perangkat Lunak
+        </p>
       </footer>
 
       {/* Popups */}
@@ -127,7 +149,7 @@ const EditGroupInfo = () => {
       )}
       {showSavePopup && (
         <PopupSaveEditGroup
-          groupId={groupId}
+          groupId={groupid}
           groupName={groupName}
           onClose={() => setShowSavePopup(false)}
         />
