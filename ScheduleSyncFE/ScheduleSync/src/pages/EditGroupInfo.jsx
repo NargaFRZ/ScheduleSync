@@ -3,12 +3,12 @@ import NavBar from "../components/NavBarLogout";
 import SideBar from "../components/SideBar";
 import PopupDeleteGroup from "../components/PopupDeleteGroup";
 import PopupSaveEditGroup from "../components/PopupSaveEditGroup";
-import { fetchGroupDetails, deleteGroup } from "../actions/group.actions";
-import { useParams, useHistory } from "react-router-dom";
+import { fetchGroupsByUser, deleteGroup } from "../actions/group.actions";
+import { useParams, useNavigate } from "react-router-dom";
 
 const EditGroupInfo = () => {
-  const { groupId } = useParams(); // Get group ID from route params
-  const history = useHistory();
+  const groupId = useParams(); // Get group ID from route params
+  const navigate = useNavigate();
 
   const [group, setGroup] = useState(null); // State to store group details
   const [loading, setLoading] = useState(true); // Loading state
@@ -20,7 +20,7 @@ const EditGroupInfo = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchGroupDetails(groupId);
+        const response = await fetchGroupsByUser();
         if (response.success) {
           setGroup(response.data);
           setGroupName(response.data.groupName); // Initialize input field
@@ -33,7 +33,6 @@ const EditGroupInfo = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [groupId]);
 
@@ -42,7 +41,7 @@ const EditGroupInfo = () => {
     try {
       const response = await deleteGroup(groupId);
       if (response.success) {
-        history.push("/your-groups"); // Redirect to groups list after deletion
+        navigate("/your-groups"); // Redirect to groups list after deletion
       } else {
         console.error("Failed to delete group", response.message);
       }

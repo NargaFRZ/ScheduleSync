@@ -45,7 +45,7 @@ const router = createBrowserRouter([
     element: <EditGroup/>
   },
   {
-    path: 'edit-group-info',
+    path: 'edit-group-info/:groupid',
     element: <EditGroupInfo/>
   },
   {
@@ -64,6 +64,8 @@ const router = createBrowserRouter([
     path: 'edit-schedule',
     element: <EditSchedule/>
   },
+  {
+  }
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(

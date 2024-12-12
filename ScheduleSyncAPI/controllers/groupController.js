@@ -379,6 +379,24 @@ const getGroupsByOwner = async (req, res) => {
   }
 };
 
+const getGroupbyId = async (req, res) => {
+  try {
+    const { groupID } = req.params;
+    const groups = await pool.query(
+      "SELECT * FROM Groups WHERE  groupID = $1",[groupID]
+    );
+
+    if (groups.rows.length === 0) {
+      return res.status(404).json({ error: "No groups found" });
+    }
+
+    res.status(200).json({ groups: groups.rows });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   createGroup,
   addMember,
@@ -391,5 +409,6 @@ module.exports = {
   getAllGroups,
   getGroupsByUser,
   getGroupsByOwner,
-  editGroup
+  editGroup,
+  getGroupbyId
 };
