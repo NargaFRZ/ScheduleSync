@@ -7,6 +7,7 @@ import { imageDb } from "../actions/firebase";
 import { v4 } from "uuid";
 import { fetchUserData } from "../actions/account.actions";
 import { uploadSchedule } from "../actions/schedule.actions";
+import { getSchedulesByOwner } from "../actions/schedule.actions";
 
 const AddSchedule = () => {
   const navigate = useNavigate();

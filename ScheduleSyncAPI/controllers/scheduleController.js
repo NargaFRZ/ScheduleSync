@@ -64,16 +64,16 @@ const deleteSchedule = async (req, res) => {
 
 // Fungsi untuk mengambil jadwal berdasarkan owner (userID)
 const getSchedulesByOwner = async (req, res) => {
-  const { owner } = req.params;
-
+  const owner  = getLoggedInUserId(req);
+  console.log(owner);
   try {
     const schedules = await pool.query(
       "SELECT * FROM Schedules WHERE owner = $1",
       [owner]
     );
-    console.log(req.params);
-    console.log(schedules);
-    console.log(schedules.rows);
+    // console.log(req.params);
+    // console.log(schedules);
+    // console.log(schedules.rows);
     if (schedules.rows.length === 0) {
       return res.status(404).json({ error: "No schedules found for this user" });
     }
