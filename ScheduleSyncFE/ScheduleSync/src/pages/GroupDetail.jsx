@@ -1,39 +1,72 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import NavBar from "../components/NavBarLogout";
 import SideBar from "../components/SideBar";
+import { getGroupMembers } from "../actions/group.actions";
+import { fetchUserData } from "../actions/account.actions";
 
 const GroupDetail = () => {
-  const user = {
-    name: "Wendy",
-    email: "lebit1x@gmail.com",
-  };
-
+  const groupID = useParams();
+  const [user, setUser] = useState({ name: "", email: "" }); // State to hold the user data
   const [activeTab, setActiveTab] = useState("entries");
+  const [entries, setEntries] = useState([]); // State to hold fetched group members
+  const [loading, setLoading] = useState(true); // State to handle loading
+  const [error, setError] = useState(null); // State to handle errors
 
-  // Mock data for entries
-  const entries = [
-    { id: 1, name: "Nebula Afifah", email: "nebula@gmail.com", file: "SS_Nebula.jpg", status: "Done" },
-    { id: 2, name: "Nebula Afifah", email: "nebula@gmail.com", file: "SS_Nebula.jpg", status: "NotYet" },
-    // Tambahkan data sesuai kebutuhan
-  ];
+  // Fetch user data and group members when component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch user data
+        const userResponse = await fetchUserData();
+        if (userResponse.success) {
+          const userData = userResponse.data;
+          setUser({ name: userData.username, email: userData.email });
 
+          // Fetch group members
+          const groupResponse = await getGroupMembers(groupID.groupid);
+          if (groupResponse.success) {
+            const formattedEntries = groupResponse.data.members.map((member, index) => ({
+              id: index + 1,
+              name: member.username,
+              file: member.file || "N/A",
+              status: member.status || "Unknown",
+            }));
+            setEntries(formattedEntries);
+          } else {
+            throw new Error("Failed to fetch group members.");
+          }
+        } else {
+          throw new Error("Failed to fetch user data.");
+        }
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [groupID]);
+
+  // Render entries table
   const renderEntriesTable = () => (
     <table className="min-w-full border border-gray-300">
       <thead className="bg-gray-100">
         <tr>
           <th className="border p-4 text-left">#</th>
           <th className="border p-4 text-left">Name</th>
-          <th className="border p-4 text-left">Email</th>
           <th className="border p-4 text-left">File</th>
           <th className="border p-4 text-left">Status</th>
         </tr>
       </thead>
       <tbody>
-        {entries.map((entry) => (
-          <tr key={entry.id} className="odd:bg-white even:bg-gray-50">
+        {entries.map((entry, index) => (
+          <tr key={index} className="odd:bg-white even:bg-gray-50">
             <td className="border p-4">{entry.id}</td>
             <td className="border p-4">{entry.name}</td>
-            <td className="border p-4">{entry.email}</td>
             <td className="border p-4 text-blue-500 hover:underline cursor-pointer">
               {entry.file}
             </td>
@@ -54,21 +87,12 @@ const GroupDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-blue-900">
-      {/* Navigation Bar */}
       <NavBar />
-
-      {/* Layout Wrapper */}
       <div className="flex flex-1">
-        {/* Sidebar */}
         <SideBar name={user.name} email={user.email} />
-
-        {/* Main Content */}
         <div className="flex-1 flex flex-col px-6">
           <div className="py-8">
-            {/* Page Title */}
             <h1 className="text-4xl font-semibold mb-6">Multimedia Team</h1>
-
-            {/* Tab Navigation */}
             <div className="flex justify-center mb-8">
               <button
                 onClick={() => setActiveTab("entries")}
@@ -87,20 +111,22 @@ const GroupDetail = () => {
                 Synced Schedule
               </button>
             </div>
-
-            {/* Tab Content */}
             <div className="bg-white shadow-md rounded-lg p-6">
-              {activeTab === "entries" ? renderEntriesTable() : renderSyncedSchedule()}
+              {loading ? (
+                <p>Loading...</p>
+              ) : error ? (
+                <p className="text-red-500">{error}</p>
+              ) : activeTab === "entries" ? (
+                renderEntriesTable()
+              ) : (
+                renderSyncedSchedule()
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Footer */}
       <footer className="text-center py-4 bg-blue-900 text-white fixed bottom-0 left-0 w-full">
-        <p className="text-sm">
-          © 2024 ScheduleSync - Group 17 Rekayasa Perangkat Lunak
-        </p>
+        <p className="text-sm">© 2024 ScheduleSync - Group 17 Rekayasa Perangkat Lunak</p>
       </footer>
     </div>
   );

@@ -12,7 +12,6 @@ const SideBar = ({ name, email }) => {
   const menuItems = [
     { name: "Your Schedule", path: "/yourschedule", icon: calendarIcon },
     { name: "Your Groups", path: "/groups", icon: groupsIcon },
-    { name: "Edit Password", path: "/edit-password", icon: lockIcon },
     { name: "Edit Group", path: "/edit-group", icon: editIcon },
   ];
 

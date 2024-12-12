@@ -91,7 +91,7 @@ const Groups = () => {
                     <h2 className="text-lg font-semibold">{group.groupname}</h2>
                     <p className="mt-2">Entries: {group.entries}</p>
                     <button
-                      onClick={() => navigate("/groups/group-detail")}
+                       onClick={() => navigate(`/groups/group-detail/${group.groupid}`)}
                       className="mt-4 bg-white text-blue-900 px-4 py-2 rounded hover:bg-gray-100"
                     >
                       Detail

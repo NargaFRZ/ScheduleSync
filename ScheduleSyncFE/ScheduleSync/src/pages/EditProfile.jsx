@@ -7,7 +7,12 @@ const EditProfile = () => {
   const [user, setUser] = useState({ name: "", email: "" });
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
-  const [password, setPassword] = useState(""); // New password state
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
@@ -30,15 +35,24 @@ const EditProfile = () => {
   }, []);
 
   const handleSave = async () => {
+    if (newPassword && newPassword !== repeatPassword) {
+      setError("New passwords do not match.");
+      return;
+    }
+
     try {
       const updateData = { username: editName, email: editEmail };
-      if (password) {
-        updateData.password = password; // Include password if provided
+      if (oldPassword && newPassword) {
+        updateData.oldPassword = oldPassword;
+        updateData.newPassword = newPassword;
       }
       await editUser(updateData);
       setUser({ name: editName, email: editEmail });
       setSuccessMessage("Profile updated successfully!");
-      setPassword(""); // Clear password field after saving
+      setOldPassword("");
+      setNewPassword("");
+      setRepeatPassword("");
+      setError(null); // Clear any previous error
     } catch (err) {
       console.error("Failed to update user profile:", err);
       setError("Failed to update profile");
@@ -49,45 +63,28 @@ const EditProfile = () => {
     return <p>Loading...</p>;
   }
 
-  if (error) {
+  if (error && !successMessage) {
     return <p>{error}</p>;
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-blue-900">
-      {/* Navigation Bar */}
       <NavBar />
-
-      {/* Layout Wrapper */}
       <div className="flex flex-1 relative">
-        {/* Sidebar */}
-        <SideBar
-          name={user.name}
-          email={user.email}
-          className="fixed top-0 left-0 z-10"
-        />
-
-        {/* Main Content */}
+        <SideBar name={user.name} email={user.email} className="fixed top-0 left-0 z-10" />
         <div className="flex-1 flex flex-col px-6 py-8 pb-20">
-          {/* Page Header */}
           <h1 className="text-4xl font-semibold mb-8">Edit Profile</h1>
 
-          {/* Success Message */}
           {successMessage && (
             <div className="mb-6 p-4 bg-green-100 text-green-800 rounded">
               {successMessage}
             </div>
           )}
 
-          {/* Profile Form */}
           <div className="bg-blue-900 p-8 rounded-lg text-white w-full max-w-2xl mx-auto">
-            {/* Input Nama Lengkap */}
             <div className="mb-6">
-              <label className="block text-sm mb-2" htmlFor="nama">
-                Username
-              </label>
+              <label className="block text-sm mb-2">Username</label>
               <input
-                id="nama"
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
@@ -96,13 +93,9 @@ const EditProfile = () => {
               />
             </div>
 
-            {/* Input Email */}
             <div className="mb-6">
-              <label className="block text-sm mb-2" htmlFor="email">
-                Email
-              </label>
+              <label className="block text-sm mb-2">Email</label>
               <input
-                id="email"
                 type="email"
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
@@ -111,25 +104,74 @@ const EditProfile = () => {
               />
             </div>
 
-            {/* Input Password */}
-            <div className="mb-6">
-              <label className="block text-sm mb-2" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg text-blue-900 bg-white"
-                placeholder="Enter new password"
-              />
-              <p className="text-xs mt-2 text-gray-200">
-                Leave blank to keep the current password.
+            {/* Space and instruction */}
+            <div className="mb-6 mt-8 p-4 bg-gray-100 text-blue-900 rounded">
+              <p className="text-sm">
+                If you want to change your profile information only, leave the password fields below blank.
               </p>
             </div>
 
-            {/* Save Button */}
+            {/* Password Fields */}
+            <div className="mb-6">
+              <label className="block text-sm mb-2">Current Password</label>
+              <div className="relative">
+                <input
+                  type={showOldPassword ? "text" : "password"}
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg text-blue-900 bg-white"
+                  placeholder="Enter current password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-4 top-2"
+                  onClick={() => setShowOldPassword(!showOldPassword)}
+                >
+                  👁️
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm mb-2">New Password</label>
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg text-blue-900 bg-white"
+                  placeholder="Enter new password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-4 top-2"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  👁️
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm mb-2">Confirm New Password</label>
+              <div className="relative">
+                <input
+                  type={showRepeatPassword ? "text" : "password"}
+                  value={repeatPassword}
+                  onChange={(e) => setRepeatPassword(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg text-blue-900 bg-white"
+                  placeholder="Confirm new password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-4 top-2"
+                  onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+                >
+                  👁️
+                </button>
+              </div>
+            </div>
+
             <div className="text-right">
               <button
                 onClick={handleSave}
@@ -139,21 +181,10 @@ const EditProfile = () => {
               </button>
             </div>
           </div>
-
-          {/* Delete Account Button */}
-          <div className="flex justify-center mt-8">
-            <button className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-500">
-              Permanently Delete my account
-            </button>
-          </div>
         </div>
       </div>
-
-      {/* Footer */}
       <footer className="text-center py-4 bg-blue-900 w-full">
-        <p className="text-sm text-white">
-          © 2024 ScheduleSync - Group 17 Rekayasa Perangkat Lunak
-        </p>
+        <p className="text-sm text-white">© 2024 ScheduleSync - Group 17 Rekayasa Perangkat Lunak</p>
       </footer>
     </div>
   );
