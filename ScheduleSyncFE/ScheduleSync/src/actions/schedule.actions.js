@@ -69,10 +69,9 @@ export const getSchedulesByOwner = async (ownerID) => {
 
 export const OCRSchedule = async (url) => {
   try {
+    console.log(url);
     const response = await instance.post(
-      `http://127.0.0.1:5000/process_schedule`,
-      url 
-    );
+      `http://127.0.0.1:5000/process_schedule`,{url} );
     return baseApiResponse(response.data, true);
   } catch (error) {
     console.error(
@@ -82,3 +81,17 @@ export const OCRSchedule = async (url) => {
     return baseApiResponse(error.response?.data || "Server error", false);
   }
 };
+
+export const getSchedulesById = async (ownerID) => {
+  try {
+    const response = await instance.get(`/schedule/schedulesById/${ownerID}`); // Use template literal to insert ownerID into the URL
+    return baseApiResponse(response.data, true);
+  } catch (error) {
+    console.error(
+      "Error fetching schedules by owner:",
+      error.response?.data || error.message
+    );
+    return baseApiResponse(error.response?.data || "Server error", false);
+  }
+};
+
