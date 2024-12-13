@@ -87,9 +87,31 @@ const getSchedulesByOwner = async (req, res) => {
   }
 };
 
+const getSchedulesById = async (req, res) => {
+  const scheduleId = req.params.scheduleid; // Access scheduleId from the request parameters
+  console.log(scheduleId);
+  try {
+    const schedules = await pool.query(
+      "SELECT * FROM Schedules WHERE scheduleid = $1",
+      [scheduleId] // Use scheduleId in the query
+    );
+
+    if (schedules.rows.length === 0) {
+      return res.status(404).json({ error: "No schedules found for this schedule ID" });
+    }
+
+    res.status(200).json({ schedules: schedules.rows });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
 module.exports = {
   uploadSchedule,
   updateSchedule,
   deleteSchedule,
-  getSchedulesByOwner
+  getSchedulesByOwner,
+  getSchedulesById
 };
