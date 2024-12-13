@@ -71,7 +71,7 @@ const router = createBrowserRouter([
     element: <JoinGroup/>
   },
   {
-    path: 'validate-schedule',
+    path: 'validate-schedule/:scheduleid',
     element: <ValidateSchedule/>
   },
 ]);

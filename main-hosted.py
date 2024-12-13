@@ -4,8 +4,11 @@ import requests
 import numpy as np
 from io import BytesIO
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # Import Flask-CORS
 
 app = Flask(__name__)
+# Enable CORS
+CORS(app, resources={r"/process_schedule": {"origins": "http://localhost:5173"}}, supports_credentials=True) # Enable CORS for all routes
 
 def preprocess_image(image):
     # Convert the image from BytesIO to a NumPy array

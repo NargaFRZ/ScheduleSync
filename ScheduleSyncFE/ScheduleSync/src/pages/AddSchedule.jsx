@@ -6,7 +6,10 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { imageDb } from "../actions/firebase";
 import { v4 } from "uuid";
 import { fetchUserData } from "../actions/account.actions";
-import { uploadSchedule, getSchedulesByOwner } from "../actions/schedule.actions";
+import {
+  uploadSchedule,
+  getSchedulesByOwner,
+} from "../actions/schedule.actions";
 
 const AddSchedule = () => {
   const navigate = useNavigate();
@@ -23,10 +26,10 @@ const AddSchedule = () => {
         const newestSchedule = schedules.data.schedules.sort(
           (a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at)
         )[0];
-        console.log("newest:",newestSchedule);
+        console.log("newest:", newestSchedule);
 
         // Check if the newest schedule has a valid image URL
-        console.log("newest url:",newestSchedule.scheduledata.metadata.url);
+        console.log("newest url:", newestSchedule.scheduledata.metadata.url);
         if (newestSchedule?.scheduledata?.metadata?.url) {
           setNewestScheduleImageUrl(newestSchedule.scheduledata.metadata.url);
         }
@@ -64,31 +67,32 @@ const AddSchedule = () => {
     try {
       const userResponse = await fetchUserData();
       const userId = userResponse?.data.userid;
-  
+
       // Check if userId and formData.file_path are available
       if (!userId) {
         console.error("User ID is missing.");
         return;
       }
-  
+
       if (!formData.file_path) {
         console.error("File path is missing.");
         return;
       }
-  
+
       const payload = {
         metadata: {
           url: formData.file_path,
         },
       };
-  
-      // Assuming uploadSchedule returns a boolean indicating success
-      const uploadSuccess = await uploadSchedule(payload);
-      console.log(uploadSuccess);
-  
-      if (uploadSuccess) {
-        console.log("Schedule uploaded successfully");
-        navigate("/validate-schedule"); // Navigate to schedule page only if upload is successful
+
+      // Assuming uploadSchedule returns the created schedule's data including its ID
+      const uploadResponse = await uploadSchedule(payload);
+      console.log("response:",uploadResponse);
+      const scheduleId = uploadResponse?.data?.schedule.scheduleid;
+      console.log(scheduleId);
+      if (scheduleId) {
+        console.log("Schedule uploaded successfully:", scheduleId);
+        navigate(`/validate-schedule/${scheduleId}`); // Pass schedule ID as route parameter
       } else {
         console.error("Failed to upload schedule.");
       }
@@ -96,8 +100,6 @@ const AddSchedule = () => {
       console.error("Error uploading schedule:", error);
     }
   };
-  
-  
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-blue-900">
@@ -136,7 +138,9 @@ const AddSchedule = () => {
             ) : (
               <>
                 <p className="text-gray-500">[Schedule Image Placeholder]</p>
-                <p className="text-sm text-gray-400">(Gambar akan diambil dari Firebase)</p>
+                <p className="text-sm text-gray-400">
+                  (Gambar akan diambil dari Firebase)
+                </p>
               </>
             )}
           </div>
