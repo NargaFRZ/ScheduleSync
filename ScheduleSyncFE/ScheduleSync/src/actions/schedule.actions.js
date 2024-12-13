@@ -11,11 +11,14 @@ const baseApiResponse = (data, isSuccess) => {
 // Upload a new schedule
 export const uploadSchedule = async (scheduleData) => {
   try {
-    console.log("data fe",scheduleData);
+    console.log("data fe", scheduleData);
     const response = await instance.post("/schedule/upload", scheduleData);
     return baseApiResponse(response.data, true);
   } catch (error) {
-    console.error("Error uploading schedule:", error.response?.data || error.message);
+    console.error(
+      "Error uploading schedule:",
+      error.response?.data || error.message
+    );
     return baseApiResponse(error.response?.data || "Server error", false);
   }
 };
@@ -26,7 +29,10 @@ export const updateSchedule = async (scheduleData) => {
     const response = await instance.put("/schedule/update", scheduleData);
     return baseApiResponse(response.data, true);
   } catch (error) {
-    console.error("Error updating schedule:", error.response?.data || error.message);
+    console.error(
+      "Error updating schedule:",
+      error.response?.data || error.message
+    );
     return baseApiResponse(error.response?.data || "Server error", false);
   }
 };
@@ -39,19 +45,40 @@ export const deleteSchedule = async (scheduleID) => {
     });
     return baseApiResponse(response.data, true);
   } catch (error) {
-    console.error("Error deleting schedule:", error.response?.data || error.message);
+    console.error(
+      "Error deleting schedule:",
+      error.response?.data || error.message
+    );
     return baseApiResponse(error.response?.data || "Server error", false);
   }
 };
 
 // Get schedules by owner
 export const getSchedulesByOwner = async (ownerID) => {
-    try {
-      const response = await instance.get(`/schedule/schedulesByOwner`);
-      return baseApiResponse(response.data, true);
-    } catch (error) {
-      console.error("Error fetching schedules by owner:", error.response?.data || error.message);
-      return baseApiResponse(error.response?.data || "Server error", false);
-    }
-  };
-  
+  try {
+    const response = await instance.get(`/schedule/schedulesByOwner`);
+    return baseApiResponse(response.data, true);
+  } catch (error) {
+    console.error(
+      "Error fetching schedules by owner:",
+      error.response?.data || error.message
+    );
+    return baseApiResponse(error.response?.data || "Server error", false);
+  }
+};
+
+export const OCRSchedule = async (url) => {
+  try {
+    const response = await instance.post(
+      `http://127.0.0.1:5000/process_schedule`,
+      url 
+    );
+    return baseApiResponse(response.data, true);
+  } catch (error) {
+    console.error(
+      "Error fetching schedules by owner:",
+      error.response?.data || error.message
+    );
+    return baseApiResponse(error.response?.data || "Server error", false);
+  }
+};

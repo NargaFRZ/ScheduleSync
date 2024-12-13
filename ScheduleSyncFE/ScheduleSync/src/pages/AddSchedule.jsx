@@ -88,7 +88,7 @@ const AddSchedule = () => {
   
       if (uploadSuccess) {
         console.log("Schedule uploaded successfully");
-        navigate("/yourschedule"); // Navigate to schedule page only if upload is successful
+        navigate("/validate-schedule"); // Navigate to schedule page only if upload is successful
       } else {
         console.error("Failed to upload schedule.");
       }
