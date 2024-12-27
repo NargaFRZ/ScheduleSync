@@ -24,7 +24,7 @@ function NavBar() {
         <div className="flex items-center space-x-8">
           {/* Edit Schedule */}
           <button
-            onClick={() => navigate("/edit-schedule")}
+            onClick={() => navigate("/add-schedule")}
             className="block py-2 px-3 text-blue-900 rounded hover:bg-blue-300 md:hover:bg-transparent md:border-0 md:p-0 hover:text-blue-700"
           >
             Edit Schedule

@@ -278,13 +278,14 @@ const getGroupMembers = async (req, res) => {
 
 // Fungsi untuk join grup menggunakan invite code
 const joinGroup = async (req, res) => {
-  const { inviteCode, userID } = req.body;
-
+  const inviteCode = req.body;
+  userID = getLoggedInUserId(req);
   try {
     // Cari grup berdasarkan inviteCode
+    console.log(inviteCode.InviteCode);
     const group = await pool.query(
       "SELECT groupID FROM Groups WHERE inviteCode = $1",
-      [inviteCode]
+      [inviteCode.InviteCode]
     );
     console.log(group.rows);
 

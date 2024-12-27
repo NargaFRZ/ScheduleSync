@@ -92,7 +92,7 @@ const AddSchedule = () => {
       console.log(scheduleId);
       if (scheduleId) {
         console.log("Schedule uploaded successfully:", scheduleId);
-        navigate(`/validate-schedule/${scheduleId}`); // Pass schedule ID as route parameter
+        navigate(`/yourschedule`); // Pass schedule ID as route parameter
       } else {
         console.error("Failed to upload schedule.");
       }

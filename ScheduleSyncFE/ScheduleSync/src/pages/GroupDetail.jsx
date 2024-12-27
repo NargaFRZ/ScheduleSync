@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import NavBar from "../components/NavBarLogout";
 import SideBar from "../components/SideBar";
-import { getGroupMembers } from "../actions/group.actions";
+import { getGroupbyId, getGroupMembers } from "../actions/group.actions";
 import { fetchUserData } from "../actions/account.actions";
 
 const GroupDetail = () => {
@@ -13,6 +13,7 @@ const GroupDetail = () => {
   const [loading, setLoading] = useState(true); // State to handle loading
   const [error, setError] = useState(null); // State to handle errors
   const [scheduleSynced, setScheduleSynced] = useState(false); // State to track if schedule is synced
+  const [groupDetail, setGroupDetail] = useState(null); // State to hold group details
 
   // Fetch user data and group members when component mounts
   useEffect(() => {
@@ -28,15 +29,27 @@ const GroupDetail = () => {
           // Fetch group members
           const groupResponse = await getGroupMembers(groupID.groupid);
           if (groupResponse.success) {
-            const formattedEntries = groupResponse.data.members.map((member, index) => ({
-              id: index + 1,
-              name: member.username,
-              file: member.file || "N/A",
-              status: "Unsynced",
-            }));
+            const formattedEntries = groupResponse.data.members.map(
+              (member, index) => ({
+                id: index + 1,
+                name: member.username,
+                file: member.file || "N/A",
+                status: "Unsynced",
+              })
+            );
             setEntries(formattedEntries);
           } else {
             throw new Error("Failed to fetch group members.");
+          }
+
+          // Fetch group details by ID
+          const groupDetailResponse = await getGroupbyId(groupID.groupid);
+          if (groupDetailResponse.success) {
+            // Store the group details in state
+            setGroupDetail(groupDetailResponse.data.groups[0]);
+            console.log(groupDetailResponse); // Example: Log the group name
+          } else {
+            throw new Error("Failed to fetch group details.");
           }
         } else {
           throw new Error("Failed to fetch user data.");
@@ -50,7 +63,7 @@ const GroupDetail = () => {
     };
 
     fetchData();
-  }, [groupID]);
+  }, [groupID]); // Dependency array includes groupID, so it runs when groupID changes
 
   // Handle "Sync Schedule" button click
   const handleSyncSchedule = () => {
@@ -77,7 +90,7 @@ const GroupDetail = () => {
   // Render entries table with grouped entries
   const renderEntriesTable = () => {
     // Group entries by status (or any other field like 'name')
-    const groupedEntries = groupEntriesBy(entries, 'status');
+    const groupedEntries = groupEntriesBy(entries, "status");
 
     return (
       <div>
@@ -114,7 +127,13 @@ const GroupDetail = () => {
                         </span>
                       )}
                     </td>
-                    <td className={`border p-4 ${entry.status === "Synced" ? "text-green-600" : "text-yellow-600"}`}>
+                    <td
+                      className={`border p-4 ${
+                        entry.status === "Synced"
+                          ? "text-green-600"
+                          : "text-yellow-600"
+                      }`}
+                    >
                       {entry.status}
                     </td>
                   </tr>
@@ -192,7 +211,7 @@ const GroupDetail = () => {
       ],
     },
   };
-  
+
   // Second set of schedule data (additional data)
   const additionalScheduleData = {
     Monday: [
@@ -246,7 +265,7 @@ const GroupDetail = () => {
       },
     ],
   };
-  
+
   const renderSyncedSchedule = () => {
     if (!scheduleSynced) {
       return (
@@ -295,9 +314,7 @@ const GroupDetail = () => {
                 {eventCount === 0 ? (
                   <span className="text-gray-500">Classes: Free</span>
                 ) : (
-                  <span className="text-blue-500">
-                    Classes: {eventCount}
-                  </span>
+                  <span className="text-blue-500">Classes: {eventCount}</span>
                 )}
               </td>
             );
@@ -326,8 +343,6 @@ const GroupDetail = () => {
       </div>
     );
   };
-  
-
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-blue-900">
@@ -336,13 +351,23 @@ const GroupDetail = () => {
         <SideBar name={user.name} email={user.email} />
         <div className="flex-1 flex flex-col px-6">
           <div className="py-8">
-            <h1 className="text-4xl font-semibold mb-6">Multimedia Team</h1>
+            <h1 className="text-4xl font-semibold mb-6">
+              {groupDetail ? groupDetail.groupname : "Loading..."}
+            </h1>
+            <p className="text-lg text-gray-700">
+    Invite Code:{" "}
+    {groupDetail && groupDetail.invitecode
+      ? groupDetail.invitecode
+      : "Fetching..."}
+  </p>
             <div className="flex justify-between mb-6">
               <div>
                 <button
                   onClick={() => setActiveTab("entries")}
                   className={`px-8 py-4 rounded-lg text-lg font-semibold transition ${
-                    activeTab === "entries" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"
+                    activeTab === "entries"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-800"
                   }`}
                 >
                   Schedule Entries
@@ -350,7 +375,9 @@ const GroupDetail = () => {
                 <button
                   onClick={() => setActiveTab("schedule")}
                   className={`ml-4 px-8 py-4 rounded-lg text-lg font-semibold transition ${
-                    activeTab === "schedule" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"
+                    activeTab === "schedule"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-800"
                   }`}
                 >
                   Synced Schedule
@@ -378,7 +405,9 @@ const GroupDetail = () => {
         </div>
       </div>
       <footer className="text-center py-4 bg-blue-900 text-white fixed bottom-0 left-0 w-full">
-        <p className="text-sm">© 2024 ScheduleSync - Group 17 Rekayasa Perangkat Lunak</p>
+        <p className="text-sm">
+          © 2024 ScheduleSync - Group 17 Rekayasa Perangkat Lunak
+        </p>
       </footer>
     </div>
   );

@@ -6,14 +6,14 @@ import { getSchedulesById, OCRSchedule } from "../actions/schedule.actions";
 
 const ValidateSchedule = () => {
   const navigate = useNavigate();
-  const id = useParams(); // Extract the id parameter from the URL
+  const { scheduleid } = useParams(); // Extract the id parameter from the URL
   const [scheduleData, setScheduleData] = useState([]);
 
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
         // First, call getSchedulesById to fetch the schedule data
-        const scheduleResponse = await getSchedulesById(id.scheduleid);
+        const scheduleResponse = await getSchedulesById(scheduleid);
         console.log("Schedule response:", scheduleResponse);
 
         if (scheduleResponse.data.schedules && scheduleResponse.data.schedules.length > 0) {
@@ -37,7 +37,7 @@ const ValidateSchedule = () => {
     };
 
     fetchSchedule(); // Fetch the schedule when the component mounts
-  }, [id]);
+  }, [scheduleid]);
 
   // Helper function to format time to HH.MM-HH.MM
   const formatTime = (timeString) => {

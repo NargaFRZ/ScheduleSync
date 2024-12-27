@@ -106,3 +106,14 @@ export const getCountMember = async (groupID) => {
     return baseApiResponse(error.response?.data || "Server error", false);
   }
 };
+
+export const joinGroup = async (InviteCode) => {
+  try {
+    console.log(InviteCode);
+    const response = await instance.post("/group/join", {InviteCode });
+    return baseApiResponse(response.data, true);
+  } catch (error) {
+    console.error( error.response?.data || error.message);
+    return baseApiResponse(error.response?.data || "Server error", false);
+  }
+} 
