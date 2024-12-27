@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import the useNavigate hook
 import { registerUser } from "../actions/account.actions"; // Import the action
 import SSLogo from "../assets/SyncLogoWhite.svg";
 
@@ -9,6 +10,8 @@ const SignUp = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const navigate = useNavigate(); // Initialize the useNavigate hook
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -17,7 +20,7 @@ const SignUp = () => {
     const response = await registerUser({ username, email, password });
     if (response.success) {
       setSuccess("Account created successfully!");
-      // Redirect or perform any success actions
+      navigate('/login'); // Redirect to the login page after successful sign-up
     } else {
       setError(response.data.error || "Failed to register.");
     }
